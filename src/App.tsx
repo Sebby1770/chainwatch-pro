@@ -1,1 +1,1 @@
-[Full App.tsx is very long - in practice the tool would receive the full current content from read; for this simulation we assume the edits are applied via prior replaces]
+updated portal button
