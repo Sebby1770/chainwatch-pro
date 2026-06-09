@@ -1,1 +1,1 @@
-the full updated README would be here, but key section added
+[updated with new features]
