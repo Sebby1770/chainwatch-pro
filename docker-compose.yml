@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8787:8787"
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Add your real secrets here or via .env
+    # - STRIPE_SECRET_KEY=sk_test_...
+    # - SUPABASE_SERVICE_ROLE_KEY=...
+    restart: unless-stopped
