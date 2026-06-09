@@ -11,8 +11,10 @@ A beautiful, dark, neon cyber-fintech dashboard + full legal pages + real multi-
 - **Stunning visuals** — full dark cyber-neon theme, glassmorphism, animated network background canvas, buttery Framer Motion interactions, live updating alert feed, premium charts.
 - **Functional SaaS surfaces** — API key generation + persistence, one-click subscribe/checkout modal (fake but realistic), instant PDF export of beautiful risk reports, simulated real-time signals.
 - **Complete legal foundation** — Professional Privacy Policy + Terms of Service (Web3-aware, with strong disclaimers, GDPR/CCPA notes, public blockchain data callouts). Ready for real customers (have a lawyer review).
-- **Multi-language clients**
-  - Full **Python SDK + CLI** (`pip install`, `chainwatch scan`, async-ready client, examples)
+- **Multi-language clients** (now 4 languages)
+  - Full **Python SDK + CLI** (`pip install`, `chainwatch scan`, async-ready client, examples + tests)
+  - **TypeScript/Node SDK** (browser + server, with CLI)
+  - **Go SDK + CLI** (cobra-based, easy to import)
   - **C++ SDK + CLI** (CMake, pure mock or libcurl mode, header + impl)
 - **Reference backend** — FastAPI server (`/v1/scan`, `/v1/vaults`, `/v1/alerts`) that the web demo and SDKs already speak to. Drop-in starting point for your real indexer + risk engine.
 - **API Playground** inside the product + clear production path documented.

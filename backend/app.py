@@ -125,3 +125,20 @@ def alerts(key: str = Depends(get_api_key)):
 @app.get("/v1/me")
 def me(key: str = Depends(get_api_key)):
     return {"api_key_prefix": key[:12] + "...", "tier": "demo_or_paid", "rate_limit": "120/min"}
+
+# --- Stripe stub (for the web checkout modal) ---
+class CreatePaymentIntentReq(BaseModel):
+    amount: int  # cents
+    currency: str = "usd"
+
+@app.post("/v1/create-payment-intent")
+def create_payment_intent(req: CreatePaymentIntentReq, key: str = Depends(get_api_key)):
+    # In production: use stripe.PaymentIntent.create( amount=req.amount, currency=req.currency, ... )
+    # Return the client_secret so the browser can confirm the payment with Stripe.js
+    fake_secret = f"pi_demo_{int(random.random()*1e10)}_secret_demo"
+    return {
+        "client_secret": fake_secret,
+        "amount": req.amount,
+        "currency": req.currency,
+        "note": "This is a demo secret. Replace with real Stripe integration using your secret key on the server only."
+    }

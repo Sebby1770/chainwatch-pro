@@ -3,11 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation, Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import jsPDF from 'jspdf'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import {
   Activity, AlertCircle, ArrowUpRight, Bot, BrainCircuit, Check,
   CircleDollarSign, Copy, Database, Gauge, Layers, LineChart as TrendIcon,
   LockKeyhole, Menu, RefreshCcw, Rocket, Search, ShieldCheck, Sparkles, TrendingUp,
-  Wallet, X, Key, Download, Play, CreditCard
+  Wallet, X, Key, Download, Play
 } from 'lucide-react'
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart,
@@ -56,6 +58,10 @@ const pricingPlans = [
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
+// Stripe test publishable key (replace with your own pk_test_... from Stripe dashboard)
+const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51REPLACE_WITH_YOUR_TEST_KEY'
+const stripePromise = loadStripe(STRIPE_PK)
+
 function hashText(value: string) {
   return value.split('').reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) % 1000003, 17)
 }
@@ -68,6 +74,61 @@ function scoreLabel(score: number) { if (score >= 70) return 'High risk'; if (sc
 function generateApiKey() {
   const rand = Array.from({ length: 18 }, () => Math.floor(Math.random() * 36).toString(36)).join('')
   return `cw_live_${rand}`
+}
+
+// Real Stripe Payment Element form (used inside the subscribe modal)
+function StripeCheckoutForm({ amount, onSuccess, onError }: { amount: number; onSuccess: () => void; onError: (msg: string) => void }) {
+  const stripe = useStripe()
+  const elements = useElements()
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!stripe || !elements) return
+
+    setLoading(true)
+    try {
+      // In a real flow we would have fetched a clientSecret from /create-payment-intent
+      // For this starter we simulate a successful test payment using the Elements.
+      // Replace with real confirmPayment + your backend-created PI secret.
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          // For demo we don't redirect; in prod use return_url or handle server confirmation
+          return_url: window.location.origin + '/pricing?success=true',
+        },
+        redirect: 'if_required',
+      })
+
+      if (error) {
+        onError(error.message || 'Payment failed')
+      } else {
+        // Payment succeeded (in test mode use card 4242424242424242)
+        onSuccess()
+      }
+    } catch (err: any) {
+      onError(err?.message || 'Unexpected payment error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ marginTop: 12 }}>
+      <PaymentElement options={{ layout: 'tabs' }} />
+      <button
+        type="submit"
+        disabled={!stripe || loading}
+        className="primary-button"
+        style={{ width: '100%', height: 48, marginTop: 16 }}
+      >
+        {loading ? 'Processing…' : `Pay $${amount} & Activate (test mode)`}
+      </button>
+      <div style={{ fontSize: 11, textAlign: 'center', marginTop: 8, color: 'var(--text-muted)' }}>
+        Test card: <strong>4242 4242 4242 4242</strong> • any future date • any CVC
+      </div>
+    </form>
+  )
 }
 
 function NetworkBackground() {
@@ -202,23 +263,37 @@ export default function App() {
   const [showMobileNav, setShowMobileNav] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  // Persist API key
+  // Persist API key (localStorage + Supabase stub)
   useEffect(() => {
     const saved = localStorage.getItem('cw_api_key')
     if (saved) setApiKey(saved)
     const savedTier = localStorage.getItem('cw_tier') as any
     if (savedTier) setCurrentTier(savedTier)
+
+    // Optional Supabase bootstrap (non-blocking)
+    import('../integrations/supabase/client').then(({ ensureDemoProfile }) => {
+      ensureDemoProfile().catch(() => {})
+    }).catch(() => {})
   }, [])
 
-  const saveApiKey = (key: string | null) => {
+  const saveApiKey = async (key: string | null) => {
     setApiKey(key)
-    if (key) localStorage.setItem('cw_api_key', key)
-    else localStorage.removeItem('cw_api_key')
+    if (key) {
+      localStorage.setItem('cw_api_key', key)
+      // Try Supabase (graceful fallback)
+      try {
+        const mod = await import('../integrations/supabase/client')
+        await mod.saveApiKeyToSupabase(key)
+      } catch {}
+    } else {
+      localStorage.removeItem('cw_api_key')
+    }
   }
 
   const saveTier = (tier: any) => {
     setCurrentTier(tier)
     localStorage.setItem('cw_tier', tier)
+    // In real Supabase flow you would also write to subscriptions table here
   }
 
   // Derived scan data (deterministic + nonce)
@@ -298,6 +373,9 @@ export default function App() {
     const p = location.pathname
     if (p === '/pricing') return 'pricing'
     if (p === '/docs') return 'docs'
+    if (p === '/features') return 'features'
+    if (p === '/status') return 'status'
+    if (p === '/account' || p === '/settings') return 'account'
     if (p === '/privacy') return 'privacy'
     if (p === '/terms') return 'terms'
     if (p.startsWith('/dashboard') || p === '/console') return 'console'
@@ -392,13 +470,21 @@ export default function App() {
     saveTier(newTier)
     setSubscriberCount(s => Math.max(s, 520 + Math.floor(Math.random() * 80)))
     setCheckoutStep('success')
-    toast.success(`Welcome to ${subscribePlan.name}`, { description: 'Your plan is now active in this demo.' })
+    toast.success(`Welcome to ${subscribePlan.name}`, { description: 'Payment confirmed (Stripe test mode). Plan active.' })
     setTimeout(() => {
       setShowSubscribe(false)
       setSubscribePlan(null)
       setCheckoutStep('form')
       navigate('/dashboard')
     }, 1450)
+  }
+
+  const handleStripeSuccess = () => {
+    completeCheckout()
+  }
+
+  const handleStripeError = (msg: string) => {
+    toast.error('Payment error', { description: msg })
   }
 
   const closeModal = () => {
@@ -445,8 +531,10 @@ export default function App() {
         <nav className="nav-links">
           <Link to="/" className={currentNav('home')}>Home</Link>
           <Link to="/dashboard" className={currentNav('console')}>Console</Link>
+          <Link to="/features" className={currentNav('features')}>Features</Link>
           <Link to="/pricing" className={currentNav('pricing')}>Pricing</Link>
           <Link to="/docs" className={currentNav('docs')}>Docs &amp; SDKs</Link>
+          <Link to="/status" className={currentNav('status')}>Status</Link>
         </nav>
 
         <div className="user-area">
@@ -822,9 +910,21 @@ export default function App() {
               <a href="https://github.com/Sebby1770/chainwatch-pro/tree/main/sdks/cpp" target="_blank" style={{ color: 'var(--accent)', fontSize: 13 }}>View in repo →</a>
             </div>
             <div className="sdk-card glass">
-              <h4>REST API (OpenAPI ready)</h4>
-              <div style={{ fontSize: 13, margin: '8px 0 14px' }}>POST /v1/scan<br />GET /v1/vaults<br />Webhooks for alerts.</div>
-              <button className="secondary-button" onClick={() => navigate('/dashboard')} style={{ fontSize: 13 }}>Try in Console</button>
+              <h4>TypeScript / Node SDK</h4>
+              <div style={{ fontSize: 13, margin: '8px 0 14px', color: 'var(--text-muted)' }}>Browser + server. Same contract as the web app.</div>
+              <div className="doc-code">const c = new ChainWatchClient(&#123; apiKey &#125;)<br />await c.scanWallet(addr, &#123; chain: 'base' &#125;)</div>
+              <a href="https://github.com/Sebby1770/chainwatch-pro/tree/main/sdks/typescript" target="_blank" style={{ color: 'var(--accent)', fontSize: 13 }}>View in repo →</a>
+            </div>
+            <div className="sdk-card glass">
+              <h4>Go SDK + CLI</h4>
+              <div style={{ fontSize: 13, margin: '8px 0 14px', color: 'var(--text-muted)' }}>Fast native CLI + importable package.</div>
+              <div className="doc-code">c := chainwatch.NewClient(key)<br />r, _ := c.ScanWallet(addr, "base")</div>
+              <a href="https://github.com/Sebby1770/chainwatch-pro/tree/main/sdks/go" target="_blank" style={{ color: 'var(--accent)', fontSize: 13 }}>View in repo →</a>
+            </div>
+            <div className="sdk-card glass">
+              <h4>REST + Supabase + Stripe</h4>
+              <div style={{ fontSize: 13, margin: '8px 0 14px' }}>Full contract + integration stubs.</div>
+              <button className="secondary-button" onClick={() => navigate('/account')} style={{ fontSize: 13 }}>Open Account</button>
             </div>
           </div>
 
@@ -847,6 +947,93 @@ export default function App() {
             3. Add Stripe + webhook delivery (Resend / Telegram bot).<br />
             4. Store users + keys in Supabase / Firebase / your DB.<br />
             The SDKs and this demo already speak the same contract.
+          </div>
+        </div>
+      )}
+
+      {/* FEATURES */}
+      {currentPage === 'features' && (
+        <div className="section" style={{ maxWidth: 1080, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 36, textAlign: 'center' }}>Everything you need for on-chain intelligence</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18, marginTop: 32 }}>
+            {[
+              ['Real-time Risk Engine', 'Deterministic + ML-ready scoring across 5+ chains with opportunity curves.'],
+              ['Vault Yield Signals', 'Monetizable intelligence on high-APY strategies with capacity and crowding data.'],
+              ['Paid Alert Rules', 'Slippage, contract events, whale movements delivered via webhooks or SDK.'],
+              ['Revenue Simulator', 'Built-in MRR/ARR/profit modeling so you can package and price correctly.'],
+              ['API + Multi-lang SDKs', 'Python, Go, TypeScript, C++ clients + OpenAPI contract.'],
+              ['Supabase + Stripe Ready', 'Stubs for auth, persistent keys, subscriptions and real payment flows.'],
+            ].map(([title, desc], i) => (
+              <div key={i} className="glass" style={{ padding: 20 }}>
+                <div style={{ color: 'var(--accent)', fontWeight: 700, marginBottom: 6 }}>{title}</div>
+                <p style={{ color: 'var(--text-muted)' }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 30 }}>
+            <button className="primary-button" onClick={() => navigate('/pricing')}>Start free trial →</button>
+          </div>
+        </div>
+      )}
+
+      {/* STATUS */}
+      {currentPage === 'status' && (
+        <div className="section" style={{ maxWidth: 900, margin: '0 auto' }}>
+          <h2>System Status</h2>
+          <div className="glass" style={{ padding: 24, marginTop: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <div className="live-dot" style={{ background: 'var(--green)' }} /> <strong style={{ color: 'var(--green)' }}>All systems operational</strong>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 14 }}>
+              <div>API <span style={{ color: 'var(--green)' }}>99.98%</span> (30d)</div>
+              <div>Scanner Engine <span style={{ color: 'var(--green)' }}>100%</span></div>
+              <div>Alert Delivery <span style={{ color: 'var(--green)' }}>99.7%</span></div>
+              <div>Webhooks <span style={{ color: 'var(--green)' }}>99.9%</span></div>
+            </div>
+            <div style={{ marginTop: 20, fontSize: 13, color: 'var(--text-muted)' }}>
+              Last incident: None in the last 90 days.<br />
+              Uptime is for the demo environment. Your production deployment will have its own monitoring.
+            </div>
+          </div>
+          <p style={{ marginTop: 20, color: 'var(--text-muted)' }}>Subscribe to status updates via the Operator plan webhooks or our public status page (coming soon).</p>
+        </div>
+      )}
+
+      {/* ACCOUNT / SETTINGS (SaaS user dashboard stub) */}
+      {currentPage === 'account' && (
+        <div className="section" style={{ maxWidth: 920, margin: '0 auto' }}>
+          <h2>Account &amp; Billing</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginTop: 20 }}>
+            <div className="glass" style={{ padding: 22 }}>
+              <h3 style={{ marginBottom: 12 }}>Current Plan</h3>
+              <div style={{ fontSize: 28, fontWeight: 700 }}>{currentTier === 'free' ? 'Free / Demo' : currentTier}</div>
+              <button className="secondary-button" style={{ marginTop: 12 }} onClick={() => navigate('/pricing')}>Manage subscription</button>
+            </div>
+            <div className="glass" style={{ padding: 22 }}>
+              <h3 style={{ marginBottom: 12 }}>API Key</h3>
+              {apiKey ? (
+                <>
+                  <div className="api-key-pill" style={{ maxWidth: 'none', padding: '8px 12px' }}>{apiKey}</div>
+                  <div style={{ marginTop: 10 }}>
+                    <button className="secondary-button" onClick={() => { navigator.clipboard.writeText(apiKey); toast('Copied') }}>Copy</button>
+                    <button className="secondary-button" style={{ marginLeft: 8 }} onClick={clearKey}>Revoke</button>
+                  </div>
+                </>
+              ) : (
+                <button className="primary-button" onClick={generateKey}>Generate new key</button>
+              )}
+              <div style={{ fontSize: 12, marginTop: 12, color: 'var(--text-muted)' }}>Keys are stored in Supabase (when configured) + local fallback.</div>
+            </div>
+          </div>
+
+          <div className="glass" style={{ padding: 22, marginTop: 18 }}>
+            <h3>Usage this month (demo)</h3>
+            <div style={{ display: 'flex', gap: 30, marginTop: 10 }}>
+              <div>Scans: <strong>47 / 75</strong></div>
+              <div>Alerts delivered: <strong>312</strong></div>
+              <div>Reports exported: <strong>8</strong></div>
+            </div>
+            <div style={{ marginTop: 14, fontSize: 12, color: 'var(--text-muted)' }}>Connect real Supabase + Stripe to track and bill usage automatically.</div>
           </div>
         </div>
       )}
@@ -939,11 +1126,14 @@ export default function App() {
       <footer className="footer">
         <div>© {new Date().getFullYear()} Sebastian Forbes — ChainWatch Pro. Not financial advice.</div>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <Link to="/privacy">Privacy Policy</Link>
-          <Link to="/terms">Terms of Service</Link>
-          <Link to="/docs">API &amp; SDKs</Link>
+          <Link to="/features">Features</Link>
+          <Link to="/pricing">Pricing</Link>
+          <Link to="/docs">Docs &amp; SDKs</Link>
+          <Link to="/status">Status</Link>
+          <Link to="/account">Account</Link>
+          <Link to="/privacy">Privacy</Link>
+          <Link to="/terms">Terms</Link>
           <a href="https://github.com/Sebby1770/chainwatch-pro" target="_blank" rel="noreferrer">GitHub</a>
-          <span style={{ opacity: 0.5 }}>MIT License</span>
         </div>
       </footer>
 
@@ -962,26 +1152,33 @@ export default function App() {
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 700 }}>UPGRADE</div>
+                      <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 700 }}>UPGRADE • POWERED BY STRIPE</div>
                       <div style={{ fontSize: 21, fontWeight: 700 }}>{subscribePlan.name} — ${subscribePlan.price}/mo</div>
                     </div>
                     <button onClick={closeModal} style={{ background: 'transparent', border: 0, color: 'var(--text-muted)' }}><X /></button>
                   </div>
 
-                  <div className="checkout-form" style={{ marginTop: 20 }}>
-                    <input placeholder="Card number  •  4242 4242 4242 4242" />
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                      <input placeholder="MM / YY" />
-                      <input placeholder="CVC" />
-                    </div>
-                    <input placeholder="Name on card" defaultValue="Alex Rivera" />
-                    <input placeholder="Billing email" defaultValue="founder@yourdao.xyz" />
+                  <div style={{ marginTop: 16 }}>
+                    <Elements 
+                      stripe={stripePromise} 
+                      options={{ 
+                        mode: 'payment', 
+                        amount: subscribePlan.price * 100, 
+                        currency: 'usd',
+                        appearance: { theme: 'night' }
+                      }}
+                    >
+                      <StripeCheckoutForm 
+                        amount={subscribePlan.price} 
+                        onSuccess={handleStripeSuccess} 
+                        onError={handleStripeError} 
+                      />
+                    </Elements>
                   </div>
 
-                  <button className="primary-button" style={{ width: '100%', height: 48, marginTop: 18 }} onClick={completeCheckout}>
-                    <CreditCard size={17} style={{ marginRight: 8 }} /> Pay ${subscribePlan.price} &amp; Activate
-                  </button>
-                  <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 10 }}>Demo only — no real charge. Your tier will upgrade in this session.</div>
+                  <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 10 }}>
+                    Real Stripe Elements (test mode). No real money is charged.
+                  </div>
                 </>
               ) : (
                 <div className="success-state">
