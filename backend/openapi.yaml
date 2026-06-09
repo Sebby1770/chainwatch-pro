@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: ChainWatch Pro API
+  version: 0.2.0
+  description: |
+    Production-ready Web3 risk & yield intelligence API.
+    Auth via Bearer API key. Rate limited.
+    See GitHub repo for SDKs and full SaaS starter.
+
+servers:
+  - url: http://localhost:8787
+    description: Local dev
+  - url: https://api.yourdomain.com
+    description: Production
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    ScanRequest:
+      type: object
+      properties:
+        address:
+          type: string
+        chain:
+          type: string
+          enum: [ethereum, base, arbitrum, polygon, solana]
+        risk_mode:
+          type: string
+          enum: [conservative, balanced, aggressive]
+    ScanResponse:
+      type: object
+      properties:
+        wallet: { type: string }
+        chain: { type: string }
+        risk_score: { type: integer }
+        health: { type: integer }
+        value_usd: { type: number }
+        positions: { type: integer }
+        gas: { type: string }
+        allocation: { type: object }
+        ts: { type: string }
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+  /v1/scan:
+    post:
+      summary: Run wallet risk scan
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScanRequest'
+      responses:
+        '200':
+          description: Scan result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanResponse'
+        '429':
+          description: Rate limited
+  /v1/vaults:
+    get:
+      summary: List vault intelligence
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Vault list
+  /v1/simulate-webhook:
+    post:
+      summary: Simulate signed webhook delivery (for testing)
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url: { type: string }
+                event: { type: string }
+                payload: { type: object }
+      responses:
+        '200':
+          description: Delivery info with signature
+  /v1/create-payment-intent:
+    post:
+      summary: Create Stripe PaymentIntent (demo)
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount: { type: integer }
+                currency: { type: string, default: usd }
+      responses:
+        '200':
+          description: client_secret for frontend confirmation
+security:
+  - ApiKeyAuth: []
