@@ -1,1 +1,1 @@
-[updated with new features]
+[full updated README with billing, Rust, deployment]

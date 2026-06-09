@@ -5,7 +5,7 @@ use chainwatch_pro::ChainWatchClient;
 #[command(name = "chainwatch-rs")]
 #[command(about = "ChainWatch Pro Rust CLI")]
 struct Cli {
-    #[arg(short, long, env = "CHAINWATCH_API_KEY")]
+    #[arg(short, long, default_value = "cw_live_demo_only_replace_me")]
     key: String,
 
     #[command(subcommand)]

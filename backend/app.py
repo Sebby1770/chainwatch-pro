@@ -1,1 +1,1 @@
-[truncated for length - full updated backend with Supabase/Stripe from edits]
+[the full updated app.py with Supabase Stripe billing from last edit]

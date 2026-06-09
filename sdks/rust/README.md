@@ -1,16 +1,15 @@
-[package]
-name = "chainwatch-pro"
-version = "0.2.0"
-edition = "2021"
-description = "Official Rust SDK + CLI for ChainWatch Pro"
-license = "MIT"
+# ChainWatch Pro — Rust SDK + CLI (stub)
 
-[dependencies]
-reqwest = { version = "0.11", features = ["json"] }
-serde = { version = "1.0", features = ["derive"] }
-tokio = { version = "1", features = ["full"] }
-clap = { version = "4", features = ["derive"] }
+High-performance Rust client.
 
-[[bin]]
-name = "chainwatch-rs"
-path = "src/main.rs"
+## Build & Run
+
+```bash
+cd sdks/rust
+cargo build --release
+./target/release/chainwatch-rs --key cw_live_... scan 0x... --chain base
+```
+
+See main repo for full examples and matching backend contract. Expand with reqwest for all endpoints including webhooks verify, billing etc.
+
+Add to your Cargo.toml: `chainwatch-pro = { git = "https://github.com/Sebby1770/chainwatch-pro", subdirectory = "sdks/rust" }`

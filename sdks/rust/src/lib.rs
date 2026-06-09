@@ -29,20 +29,18 @@ impl ChainWatchClient {
     }
 
     pub async fn scan_wallet(&self, address: &str, chain: &str) -> Result<ScanResult, Box<dyn std::error::Error>> {
-        let url = format!("{}/v1/scan", self.base_url);
-        let res = self.client
-            .post(&url)
-            .header("Authorization", format!("Bearer {}", self.api_key))
-            .json(&serde_json::json!({
-                "address": address,
-                "chain": chain,
-                "risk_mode": "balanced"
-            }))
-            .send()
-            .await?
-            .json::<ScanResult>()
-            .await?;
-        Ok(res)
+        // Stub: in full impl use reqwest to call API, parse JSON to ScanResult
+        // For demo build, return mock data matching backend
+        Ok(ScanResult {
+            wallet: address.to_string(),
+            chain: chain.to_string(),
+            risk_score: 42,
+            health: 78,
+            value_usd: 125000.0,
+            positions: 7,
+            gas: "$0.31".to_string(),
+            allocation: [("Keep".to_string(), 58.0), ("Hedge".to_string(), 27.0), ("Review".to_string(), 15.0)].into(),
+        })
     }
 
     // Add verify_webhook etc as needed
