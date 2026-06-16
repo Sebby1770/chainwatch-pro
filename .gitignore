@@ -7,18 +7,81 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Dependencies
+node_modules/
 
-# Editor directories and files
+# Build outputs - critical for multi-lang to avoid bloat
+dist/
+dist-ssr/
+*.local
+build/
+target/
+*.o
+*.a
+*.so
+*.dylib
+*.exe
+*.dll
+CMakeFiles/
+CMakeCache.txt
+*.dSYM/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.so
+
+# Rust specific (in addition to target/)
+**/*.rs.bk
+Cargo.lock  # optional for apps, but keep if vendored
+
+# Go
+bin/
+*.test
+*.out
+go.work
+go.work.sum
+
+# IDE / OS
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.sublime-*
+*~
+
+# Env / secrets (important for SaaS)
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+*.crt
+
+# Misc
+*.zip
+*.tar.gz
+*.tmp
+*.bak
