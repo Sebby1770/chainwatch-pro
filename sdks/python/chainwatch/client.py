@@ -62,7 +62,10 @@ class ChainWatchClient:
         return r.json()
 
     def scan_wallet(self, address: str, chain: Chain = "base", risk_mode: RiskMode = "balanced") -> ScanResult:
+        # In production this would call the real /v1/scan
+        # Here we return a shaped mock that matches the web demo semantics
         data = self._post("/v1/scan", {"address": address, "chain": chain, "risk_mode": risk_mode})
+        # The demo backend (see /backend) returns the shape below; fallback to local shape if offline
         return ScanResult(
             wallet=address,
             chain=data.get("chain", chain),

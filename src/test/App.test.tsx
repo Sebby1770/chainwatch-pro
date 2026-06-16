@@ -10,7 +10,7 @@ describe('App', () => {
         <App />
       </BrowserRouter>
     )
-    expect(screen.getByText(/ChainWatch Pro/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /ChainWatch Pro/i })).toBeInTheDocument()
   })
 
   it('shows sign in button when not authenticated', () => {
@@ -19,8 +19,6 @@ describe('App', () => {
         <App />
       </BrowserRouter>
     )
-    // There may be multiple, but the auth one should be there
-    const hasSignIn = screen.queryAllByText(/Sign in/i).length > 0 || screen.queryAllByText(/Sign in/i).length > 0
-    expect(hasSignIn || true).toBe(true) // loose for demo auth state
+    expect(screen.getAllByRole('button', { name: /Sign in/i }).length).toBeGreaterThan(0)
   })
 })

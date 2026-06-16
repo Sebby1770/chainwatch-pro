@@ -1,3 +1,4 @@
+# ChainWatch Pro Backend - FastAPI (production-ready starter)
 FROM python:3.11-slim
 
 WORKDIR /app

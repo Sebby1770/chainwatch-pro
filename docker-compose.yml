@@ -13,3 +13,18 @@ services:
     # - STRIPE_SECRET_KEY=sk_test_...
     # - SUPABASE_SERVICE_ROLE_KEY=...
     restart: unless-stopped
+
+  # Optional: if you want a local Postgres for testing instead of Supabase cloud
+  # postgres:
+  #   image: postgres:16
+  #   environment:
+  #     POSTGRES_USER: chainwatch
+  #     POSTGRES_PASSWORD: chainwatch
+  #     POSTGRES_DB: chainwatch
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+
+# volumes:
+#   pgdata:

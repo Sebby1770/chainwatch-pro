@@ -4,7 +4,7 @@ This is a minimal production-shaped mock backend you can run locally while build
 
 It implements the exact contract the web demo + Python/C++ SDKs expect.
 
-## Run
+## Run (local)
 
 ```bash
 cd backend
@@ -13,7 +13,17 @@ pip install -r requirements.txt
 uvicorn app:app --reload --port 8787
 ```
 
-Then point the frontend (future) or SDKs at `http://localhost:8787`.
+## Run with Docker
+
+```bash
+# From project root
+docker compose up --build
+
+# Or just the backend
+docker compose up --build backend
+```
+
+The API will be available at http://localhost:8787
 
 ## Endpoints
 
