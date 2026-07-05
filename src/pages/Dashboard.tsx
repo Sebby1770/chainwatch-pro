@@ -30,10 +30,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { AddressBadge } from '../components/AddressBadge'
 import { KpiCard } from '../components/KpiCard'
 import { PortfolioRiskDashboard } from '../components/PortfolioRiskDashboard'
 import { SectionTitle } from '../components/SectionTitle'
 import { TransactionTimeline } from '../components/TransactionTimeline'
+import { UsageAnalytics } from '../components/UsageAnalytics'
+import { useUsageCounters } from '../hooks/useUsageCounters'
 import { generateRiskReportPdf } from '../lib/pdfReport'
 import { useLiveAlerts } from '../hooks/useLiveAlerts'
 import { chains, riskModes } from '../lib/constants'
@@ -52,6 +55,7 @@ export function Dashboard() {
   const [activeChain, setActiveChain] = useState<ChainId>('base')
   const [riskMode, setRiskMode] = useState<RiskMode>('balanced')
   const [scanNonce, setScanNonce] = useState(0)
+  const { increment } = useUsageCounters()
 
   const chain = chains.find((item) => item.id === activeChain) ?? chains[0]
   const mode = riskModes.find((item) => item.id === riskMode) ?? riskModes[1]
@@ -147,7 +151,14 @@ export function Dashboard() {
                 onChange={(event) => setWalletAddress(event.target.value)}
                 spellCheck="false"
               />
-              <button type="button" onClick={() => setScanNonce((value) => value + 1)} aria-label="Analyze wallet">
+              <button
+                type="button"
+                onClick={() => {
+                  setScanNonce((value) => value + 1)
+                  increment('scans')
+                }}
+                aria-label="Analyze wallet"
+              >
                 <Search size={18} aria-hidden="true" />
               </button>
             </div>
@@ -208,6 +219,8 @@ export function Dashboard() {
 
       <PortfolioRiskDashboard />
 
+      <UsageAnalytics />
+
       <section className="kpi-grid" aria-label="Key metrics">
         <KpiCard
           icon={Gauge}
@@ -237,6 +250,7 @@ export function Dashboard() {
                 spellCheck="false"
                 aria-label={`Compare wallet ${slot + 1}`}
               />
+              <AddressBadge address={compareAddresses[slot]} />
               <div className="compare-stats">
                 <strong>{compareResults[slot].riskScore}/100</strong>
                 <span>{formatCurrency(compareResults[slot].portfolioValue)}</span>

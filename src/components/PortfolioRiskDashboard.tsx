@@ -2,29 +2,16 @@ import clsx from 'clsx'
 import { PieChart, Shield } from 'lucide-react'
 import { useMemo } from 'react'
 import { Cell, Pie, PieChart as RechartsPie, ResponsiveContainer, Tooltip, Bar, BarChart, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { AddressBadge } from './AddressBadge'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { computePortfolioRisk } from '../lib/portfolio'
-import type { WatchlistEntry } from '../lib/types'
+import { DEFAULT_WATCHLIST, normalizeWatchlistEntry } from '../lib/watchlist'
 import { formatCurrency, scoreLabel } from '../lib/utils'
 import { SectionTitle } from './SectionTitle'
 
-const DEFAULT_WATCHLIST: WatchlistEntry[] = [
-  {
-    id: '1',
-    address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-    label: 'Demo vault',
-    addedAt: Date.now() - 86400000,
-  },
-  {
-    id: '2',
-    address: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
-    label: 'Treasury',
-    addedAt: Date.now() - 172800000,
-  },
-]
-
 export function PortfolioRiskDashboard() {
-  const [watchlist] = useLocalStorage<WatchlistEntry[]>('chainwatch-watchlist', DEFAULT_WATCHLIST)
+  const [rawWatchlist] = useLocalStorage('chainwatch-watchlist', DEFAULT_WATCHLIST)
+  const watchlist = useMemo(() => rawWatchlist.map(normalizeWatchlistEntry), [rawWatchlist])
 
   const portfolio = useMemo(() => computePortfolioRisk(watchlist), [watchlist])
 
@@ -59,6 +46,14 @@ export function PortfolioRiskDashboard() {
           <strong>{formatCurrency(portfolio.totalValue)}</strong>
           <small>Across {portfolio.walletCount} wallets</small>
         </div>
+      </div>
+
+      <div className="portfolio-labels">
+        {watchlist.map((entry) => (
+          <div key={entry.id} className="portfolio-label-row">
+            <AddressBadge address={entry.address} />
+          </div>
+        ))}
       </div>
 
       <div className="portfolio-charts">

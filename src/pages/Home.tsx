@@ -3,9 +3,9 @@ import { ArrowRight, Globe2, Rocket, ShieldCheck, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 const features = [
-  { title: 'Wallet risk scoring', detail: 'Deterministic scans across Ethereum, Base, Arbitrum, and more.' },
-  { title: 'Live alert feed', detail: 'Simulated WebSocket stream with severity-ranked signals.' },
-  { title: 'API playground', detail: 'Test /v1/scan, /v1/vaults, and /v1/alerts against the FastAPI stub.' },
+  { title: 'Vault intelligence', detail: 'Filter and sort DeFi vaults by APY, TVL, and risk score across chains.' },
+  { title: 'Contract scanner', detail: 'Paste any contract address for mock audit scores and vulnerability reports.' },
+  { title: 'GraphQL playground', detail: 'Run sample queries for scans, vaults, and contract audits with mock data.' },
 ]
 
 export function Home() {
@@ -19,7 +19,7 @@ export function Home() {
         >
           <span className="eyebrow">
             <Sparkles size={14} aria-hidden="true" />
-            ChainWatch Pro v2
+            ChainWatch Pro v4
           </span>
           <h1>Risk scores, yield signals, and paid alerts in one Web3 control room.</h1>
           <p>
@@ -51,7 +51,7 @@ export function Home() {
             </div>
             <div>
               <span>Routes</span>
-              <strong>7 pages</strong>
+              <strong>14 pages</strong>
             </div>
           </div>
         </motion.div>

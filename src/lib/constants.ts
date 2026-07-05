@@ -1,4 +1,5 @@
 import type { Chain, RiskModeOption } from './types'
+import { VAULT_CATALOG } from './vaults'
 
 export const chains: Chain[] = [
   { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', baseRisk: 34, gas: '$7.42', tvl: '$61.2B' },
@@ -14,44 +15,15 @@ export const riskModes: RiskModeOption[] = [
   { id: 'aggressive', label: 'Aggressive', delta: 9 },
 ]
 
-export const vaults = [
-  {
-    name: 'Stablecoin Delta Vault',
-    chain: 'Base',
-    apy: 8.4,
-    risk: 22,
-    capacity: '$8.1M',
-    revenue: '$129/mo pro signal',
-    status: 'Low drawdown',
-  },
-  {
-    name: 'LST Loop Monitor',
-    chain: 'Ethereum',
-    apy: 6.9,
-    risk: 31,
-    capacity: '$24.8M',
-    revenue: '$349/mo desk plan',
-    status: 'Crowded trade',
-  },
-  {
-    name: 'Perps Funding Sweep',
-    chain: 'Arbitrum',
-    apy: 14.7,
-    risk: 57,
-    capacity: '$3.7M',
-    revenue: '2 percent success fee',
-    status: 'Active watchlist',
-  },
-  {
-    name: 'Treasury Rebalance Bot',
-    chain: 'Solana',
-    apy: 10.2,
-    risk: 44,
-    capacity: '$5.9M',
-    revenue: '$799/mo enterprise',
-    status: 'API gated',
-  },
-]
+export const vaults = VAULT_CATALOG.map((vault) => ({
+  name: vault.name,
+  chain: vault.chainLabel,
+  apy: vault.apy,
+  risk: vault.risk,
+  capacity: vault.capacity,
+  revenue: vault.revenue,
+  status: vault.status,
+}))
 
 export const pricingPlans = [
   {
@@ -102,8 +74,25 @@ export const API_ENDPOINTS = [
     id: 'vaults',
     method: 'GET',
     path: '/v1/vaults',
-    description: 'List monitored vaults with risk scores',
+    description: 'List monitored vaults with APY, TVL, and risk scores',
     defaultBody: null,
+  },
+  {
+    id: 'usage',
+    method: 'GET',
+    path: '/v1/usage',
+    description: 'Usage analytics for API calls, scans, and alerts',
+    defaultBody: null,
+  },
+  {
+    id: 'contract-scan',
+    method: 'POST',
+    path: '/v1/scan/contract',
+    description: 'Scan a smart contract for audit score and vulnerabilities',
+    defaultBody: {
+      address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      chain: 'ethereum',
+    },
   },
   {
     id: 'alerts',

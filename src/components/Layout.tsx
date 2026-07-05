@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import { Bell, LockKeyhole, Menu, ShieldCheck } from 'lucide-react'
+import { MobileBottomNav } from './MobileBottomNav'
 import { OnboardingTour } from './OnboardingTour'
 import { ThemeToggle } from './ThemeToggle'
 import { NavLink, Outlet } from 'react-router-dom'
@@ -12,9 +13,12 @@ const navItems = [
   { to: '/', label: 'Home', end: true },
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/watchlist', label: 'Watchlist' },
+  { to: '/vaults', label: 'Vaults' },
+  { to: '/scanner', label: 'Scanner' },
   { to: '/alerts', label: 'Alerts' },
   { to: '/compliance', label: 'Compliance' },
   { to: '/webhooks', label: 'Webhooks' },
+  { to: '/graphql', label: 'GraphQL' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/docs', label: 'Docs' },
   { to: '/api-playground', label: 'API' },
@@ -76,6 +80,7 @@ export function Layout() {
         <Outlet />
       </motion.main>
 
+      <MobileBottomNav />
       <OnboardingTour />
       <Toaster position="bottom-right" richColors closeButton />
     </div>

@@ -11,8 +11,11 @@ describe('App', () => {
 
   it('renders primary navigation links', () => {
     render(<App />)
-    expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/dashboard')
-    expect(screen.getByRole('link', { name: 'Watchlist' })).toHaveAttribute('href', '/watchlist')
-    expect(screen.getByRole('link', { name: 'API' })).toHaveAttribute('href', '/api-playground')
+    const nav = screen.getByRole('navigation', { name: 'Primary navigation' })
+    expect(nav).toBeInTheDocument()
+    expect(nav.querySelector('a[href="/dashboard"]')).toBeInTheDocument()
+    expect(nav.querySelector('a[href="/watchlist"]')).toBeInTheDocument()
+    expect(nav.querySelector('a[href="/vaults"]')).toBeInTheDocument()
+    expect(nav.querySelector('a[href="/api-playground"]')).toBeInTheDocument()
   })
 })

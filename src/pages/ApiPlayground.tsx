@@ -3,21 +3,52 @@ import { Play, Terminal } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { SectionTitle } from '../components/SectionTitle'
+import { useUsageCounters } from '../hooks/useUsageCounters'
 import { API_ENDPOINTS } from '../lib/constants'
+import { scanContract } from '../lib/contractScan'
+import { VAULT_CATALOG, vaultToApiPayload } from '../lib/vaults'
 import { hashText, clamp } from '../lib/utils'
 
 function mockResponse(endpointId: string, body: Record<string, unknown> | null) {
   if (endpointId === 'health') {
-    return { status: 'ok', version: '1.0.0', timestamp: new Date().toISOString() }
+    return { status: 'ok', version: '4.0.0', timestamp: new Date().toISOString() }
+  }
+
+  if (endpointId === 'usage') {
+    return {
+      period: '30d',
+      api_calls: 1240,
+      wallet_scans: 318,
+      contract_scans: 74,
+      alerts_sent: 56,
+      plan: 'pro',
+      quota: { api_calls: 1000, scans: 'unlimited' },
+    }
   }
 
   if (endpointId === 'vaults') {
     return {
-      vaults: [
-        { name: 'Stablecoin Delta Vault', chain: 'base', apy: 8.4, risk: 22, capacity: '$8.1M' },
-        { name: 'LST Loop Monitor', chain: 'ethereum', apy: 6.9, risk: 31, capacity: '$24.8M' },
-        { name: 'Perps Funding Sweep', chain: 'arbitrum', apy: 14.7, risk: 57, capacity: '$3.7M' },
-      ],
+      vaults: VAULT_CATALOG.map(vaultToApiPayload),
+      total_tvl: VAULT_CATALOG.reduce((sum, vault) => sum + vault.tvl, 0),
+      count: VAULT_CATALOG.length,
+    }
+  }
+
+  if (endpointId === 'contract-scan') {
+    const address = String(body?.address ?? '0x0')
+    const chain = String(body?.chain ?? 'ethereum') as 'ethereum' | 'base' | 'arbitrum' | 'polygon' | 'solana'
+    const result = scanContract(address, chain)
+    return {
+      address: result.address,
+      chain: result.chain,
+      audit_score: result.auditScore,
+      risk_grade: result.riskGrade,
+      compiler: result.compiler,
+      contract_name: result.contractName,
+      is_verified: result.isVerified,
+      proxy_detected: result.proxyDetected,
+      vulnerabilities: result.vulnerabilities,
+      scanned_at: result.scannedAt,
     }
   }
 
@@ -52,6 +83,7 @@ function mockResponse(endpointId: string, body: Record<string, unknown> | null) 
 }
 
 export function ApiPlayground() {
+  const { increment } = useUsageCounters()
   const [selectedId, setSelectedId] = useState('scan')
   const [bodyText, setBodyText] = useState(
     JSON.stringify(API_ENDPOINTS[0].defaultBody, null, 2),
@@ -91,6 +123,9 @@ export function ApiPlayground() {
 
       setResponseText(JSON.stringify({ ...data, _meta: { latency_ms: elapsed, mock: true } }, null, 2))
       setStatus(200)
+      increment('apiCalls')
+      if (endpoint.id === 'scan') increment('scans')
+      if (endpoint.id === 'contract-scan') increment('contractScans')
       toast.success(`${endpoint.method} ${endpoint.path} — 200 OK`)
     } catch {
       setStatus(400)
@@ -106,7 +141,7 @@ export function ApiPlayground() {
       <section className="panel">
         <SectionTitle icon={Terminal} eyebrow="Console" title="Interactive API playground" />
         <p className="api-intro">
-          Mock responses for <code>/v1/scan</code>, <code>/v1/vaults</code>, and <code>/v1/alerts</code>.
+          Mock responses for <code>/v1/scan</code>, <code>/v1/vaults</code>, <code>/v1/usage</code>, and <code>/v1/scan/contract</code>.
           Connect to the FastAPI backend at <code>http://localhost:8000</code> in production.
         </p>
       </section>
@@ -138,7 +173,7 @@ export function ApiPlayground() {
             </button>
           </div>
 
-          {endpoint.defaultBody !== null || selectedId === 'scan' ? (
+          {endpoint.defaultBody !== null || selectedId === 'scan' || selectedId === 'contract-scan' ? (
             <label className="api-body-label">
               <span>Request body (JSON)</span>
               <textarea

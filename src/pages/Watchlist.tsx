@@ -1,35 +1,34 @@
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
-import { Plus, Search, Trash2, Wallet } from 'lucide-react'
+import { Plus, Search, Tag, Trash2, Wallet } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { SectionTitle } from '../components/SectionTitle'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { chains } from '../lib/constants'
+import { DEFAULT_WATCHLIST, normalizeWatchlistEntry } from '../lib/watchlist'
 import type { WatchlistEntry } from '../lib/types'
 import { computeRiskScore, scoreLabel } from '../lib/utils'
 
-const DEFAULT_WATCHLIST: WatchlistEntry[] = [
-  {
-    id: '1',
-    address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-    label: 'Demo vault',
-    addedAt: Date.now() - 86400000,
-  },
-  {
-    id: '2',
-    address: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
-    label: 'Treasury',
-    addedAt: Date.now() - 172800000,
-  },
-]
+function parseTags(value: string) {
+  return value
+    .split(',')
+    .map((tag) => tag.trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 6)
+}
 
 export function Watchlist() {
   const navigate = useNavigate()
   const [watchlist, setWatchlist] = useLocalStorage<WatchlistEntry[]>('chainwatch-watchlist', DEFAULT_WATCHLIST)
   const [newAddress, setNewAddress] = useState('')
   const [newLabel, setNewLabel] = useState('')
+  const [newTags, setNewTags] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editTags, setEditTags] = useState('')
+
+  const normalizedWatchlist = watchlist.map(normalizeWatchlistEntry)
 
   const addWallet = () => {
     const trimmed = newAddress.trim()
@@ -37,7 +36,7 @@ export function Watchlist() {
       toast.error('Enter a wallet address')
       return
     }
-    if (watchlist.some((entry) => entry.address.toLowerCase() === trimmed.toLowerCase())) {
+    if (normalizedWatchlist.some((entry) => entry.address.toLowerCase() === trimmed.toLowerCase())) {
       toast.error('Address already on watchlist')
       return
     }
@@ -45,19 +44,31 @@ export function Watchlist() {
     const entry: WatchlistEntry = {
       id: crypto.randomUUID(),
       address: trimmed,
-      label: newLabel.trim() || `Wallet ${watchlist.length + 1}`,
+      label: newLabel.trim() || `Wallet ${normalizedWatchlist.length + 1}`,
+      tags: parseTags(newTags),
       addedAt: Date.now(),
     }
 
-    setWatchlist((current) => [entry, ...current])
+    setWatchlist((current) => [entry, ...current.map(normalizeWatchlistEntry)])
     setNewAddress('')
     setNewLabel('')
+    setNewTags('')
     toast.success('Wallet added to watchlist')
   }
 
   const removeWallet = (id: string) => {
     setWatchlist((current) => current.filter((entry) => entry.id !== id))
     toast.success('Removed from watchlist')
+  }
+
+  const saveTags = (id: string) => {
+    setWatchlist((current) =>
+      current.map((entry) =>
+        entry.id === id ? { ...normalizeWatchlistEntry(entry), tags: parseTags(editTags) } : normalizeWatchlistEntry(entry),
+      ),
+    )
+    setEditingId(null)
+    toast.success('Tags updated')
   }
 
   const quickScan = (address: string) => {
@@ -83,6 +94,12 @@ export function Watchlist() {
             placeholder="Label (optional)"
             aria-label="Wallet label"
           />
+          <input
+            value={newTags}
+            onChange={(event) => setNewTags(event.target.value)}
+            placeholder="Tags (comma-separated)"
+            aria-label="Wallet tags"
+          />
           <button type="button" className="primary-button" onClick={addWallet}>
             <Plus size={17} aria-hidden="true" />
             Add
@@ -91,7 +108,7 @@ export function Watchlist() {
       </section>
 
       <section className="watchlist-grid">
-        {watchlist.map((entry, index) => {
+        {normalizedWatchlist.map((entry, index) => {
           const chain = chains[index % chains.length]
           const { riskScore } = computeRiskScore(entry.address, chain.baseRisk, 0)
           const tone = riskScore >= 70 ? 'critical' : riskScore >= 45 ? 'watch' : 'healthy'
@@ -111,6 +128,46 @@ export function Watchlist() {
                 </div>
                 <span className={clsx('status-pill', tone)}>{scoreLabel(riskScore)}</span>
               </div>
+
+              <div className="watchlist-tags-row">
+                {entry.tags.length > 0 ? (
+                  <div className="address-tags">
+                    {entry.tags.map((tag) => (
+                      <span key={tag} className="address-tag">
+                        <Tag size={10} aria-hidden="true" />
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="muted-text">No tags</span>
+                )}
+                {editingId === entry.id ? (
+                  <div className="tag-edit-row">
+                    <input
+                      value={editTags}
+                      onChange={(event) => setEditTags(event.target.value)}
+                      placeholder="defi, treasury, ops"
+                      aria-label={`Edit tags for ${entry.label}`}
+                    />
+                    <button type="button" className="secondary-button small-btn" onClick={() => saveTags(entry.id)}>
+                      Save
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="secondary-button small-btn"
+                    onClick={() => {
+                      setEditingId(entry.id)
+                      setEditTags(entry.tags.join(', '))
+                    }}
+                  >
+                    Edit tags
+                  </button>
+                )}
+              </div>
+
               <div className="watchlist-card-body">
                 <strong>{riskScore}/100</strong>
                 <span>{chain.name} risk</span>
@@ -129,7 +186,7 @@ export function Watchlist() {
         })}
       </section>
 
-      {watchlist.length === 0 ? (
+      {normalizedWatchlist.length === 0 ? (
         <p className="empty-state">No wallets on your watchlist yet. Add an address above.</p>
       ) : null}
     </div>

@@ -1,5 +1,24 @@
 # Changelog
 
+## [4.0.0] - 2026-07-05
+
+### Added
+
+- **Vaults Page** (`/vaults`) — DeFi vault cards with APY, TVL, risk score, chain; filter by chain and sort by APY/TVL/risk/name
+- **Contract Scanner Page** (`/scanner`) — paste contract address for mock audit score, vulnerability list, and compiler info
+- **Usage Analytics** — dashboard widget tracking API calls, scans, contract scans, and alerts sent via localStorage counters
+- **Address Labels** — custom labels and comma-separated tags on watchlist wallets; shown in dashboard compare and portfolio views
+- **GraphQL Playground** (`/graphql`) — mock query editor with sample queries for wallet scan, vault list, and contract audit
+- **Alert Digest Preview** — modal with formatted daily digest email preview on Alerts page
+- **Mobile Bottom Nav** — responsive bottom tab bar (Home, Dashboard, Watchlist, Vaults, Scanner, Alerts) on small screens
+- **Backend expansions** — richer `GET /v1/vaults`, new `GET /v1/usage`, and `POST /v1/scan/contract` in `backend/app.py`
+
+### Changed
+
+- Bumped API and package version to 4.0.0
+- Extended watchlist entries with `tags` field and centralized default watchlist in `lib/watchlist.ts`
+- API Playground mock responses updated for new endpoints
+
 ## [3.0.0] - 2026-07-05
 
 ### Added

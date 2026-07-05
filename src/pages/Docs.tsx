@@ -4,7 +4,9 @@ import { SectionTitle } from '../components/SectionTitle'
 
 const endpoints = [
   { method: 'POST', path: '/v1/scan', body: '{ address, chain, mode }', response: 'risk_score, health_score, portfolio_value' },
-  { method: 'GET', path: '/v1/vaults', body: '—', response: 'vaults[] with apy, risk, capacity' },
+  { method: 'POST', path: '/v1/scan/contract', body: '{ address, chain }', response: 'audit_score, vulnerabilities, compiler' },
+  { method: 'GET', path: '/v1/vaults', body: '—', response: 'vaults[] with apy, tvl, risk_score, auditors' },
+  { method: 'GET', path: '/v1/usage', body: '—', response: 'api_calls, wallet_scans, alerts_sent, quota' },
   { method: 'GET', path: '/v1/alerts', body: '—', response: 'alerts[] with severity, chain, message' },
   { method: 'GET', path: '/health', body: '—', response: '{ status: "ok" }' },
 ]

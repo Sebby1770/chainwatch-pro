@@ -3,7 +3,9 @@ import { motion } from 'framer-motion'
 import { Bell, Plus, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { AlertDigestPreview } from '../components/AlertDigestPreview'
 import { SectionTitle } from '../components/SectionTitle'
+import { useUsageCounters } from '../hooks/useUsageCounters'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { chains } from '../lib/constants'
 import type { AlertHistoryItem, AlertRule, AlertType, ChainId } from '../lib/types'
@@ -46,6 +48,7 @@ function generateHistory(rules: AlertRule[]): AlertHistoryItem[] {
 }
 
 export function Alerts() {
+  const { increment } = useUsageCounters()
   const [rules, setRules] = useLocalStorage<AlertRule[]>('chainwatch-alert-rules', DEFAULT_RULES)
   const [draft, setDraft] = useState({
     name: '',
@@ -73,6 +76,7 @@ export function Alerts() {
 
     setRules((current) => [rule, ...current])
     setDraft({ name: '', chain: 'base', type: 'slippage', threshold: 2 })
+    increment('alertsSent')
     toast.success('Alert rule created')
   }
 
@@ -171,7 +175,12 @@ export function Alerts() {
         </article>
 
         <article className="panel">
-          <SectionTitle icon={Bell} eyebrow="History" title="Simulated alert history" />
+          <SectionTitle
+            icon={Bell}
+            eyebrow="History"
+            title="Simulated alert history"
+            action={<AlertDigestPreview history={history} />}
+          />
           <div className="alert-list history-list">
             {history.map((item, index) => (
               <motion.div

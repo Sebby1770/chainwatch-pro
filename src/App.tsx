@@ -3,11 +3,14 @@ import { Layout } from './components/Layout'
 import { Alerts } from './pages/Alerts'
 import { ApiPlayground } from './pages/ApiPlayground'
 import { Compliance } from './pages/Compliance'
+import { ContractScanner } from './pages/ContractScanner'
 import { Dashboard } from './pages/Dashboard'
 import { Docs } from './pages/Docs'
+import { GraphQLPlayground } from './pages/GraphQLPlayground'
 import { Home } from './pages/Home'
 import { Pricing } from './pages/Pricing'
 import { Settings } from './pages/Settings'
+import { Vaults } from './pages/Vaults'
 import { Watchlist } from './pages/Watchlist'
 import { Webhooks } from './pages/Webhooks'
 
@@ -22,6 +25,9 @@ function App() {
           <Route path="alerts" element={<Alerts />} />
           <Route path="pricing" element={<Pricing />} />
           <Route path="docs" element={<Docs />} />
+          <Route path="vaults" element={<Vaults />} />
+          <Route path="scanner" element={<ContractScanner />} />
+          <Route path="graphql" element={<GraphQLPlayground />} />
           <Route path="api-playground" element={<ApiPlayground />} />
           <Route path="settings" element={<Settings />} />
           <Route path="webhooks" element={<Webhooks />} />

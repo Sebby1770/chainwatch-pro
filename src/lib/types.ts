@@ -31,6 +31,7 @@ export interface WatchlistEntry {
   id: string
   address: string
   label: string
+  tags: string[]
   addedAt: number
 }
 
