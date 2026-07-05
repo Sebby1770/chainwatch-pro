@@ -26,6 +26,18 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+[data-theme='dark'] {
+  --bg: #0b1018;
+  --surface: #121a27;
+  --surface-strong: #0a0f17;
+  --surface-soft: #1a2433;
+  --text: #cbd5e1;
+  --text-strong: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border: #2a3648;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
 * {
   box-sizing: border-box;
 }

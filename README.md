@@ -2,23 +2,26 @@
 
 ChainWatch Pro is a GitHub-ready Web3 SaaS starter for wallet risk scoring, vault intelligence, paid alerts, and subscription revenue planning.
 
-Version 2 adds full routing, dedicated pages, a FastAPI backend stub, API playground, and production-oriented architecture.
+Version 3 adds portfolio risk aggregation, PDF exports, settings, webhooks, compliance reports, dark mode, and an onboarding tour.
 
 ## What it includes
 
-- **Dashboard** — animated network background, live alert feed (simulated WebSocket every 5s), multi-wallet compare, 7-day risk timeline, chain switcher, risk mode toggle
+- **Dashboard** — animated network background, live alert feed, multi-wallet compare, 7-day risk timeline, portfolio risk dashboard, transaction timeline, PDF export
 - **Watchlist** — add/remove wallets with localStorage persistence and quick scan
 - **Alerts** — rule builder (threshold, chain, type) and simulated alert history
-- **API Playground** — interactive console for `/v1/scan`, `/v1/vaults`, `/v1/alerts`
+- **Compliance** — mock compliance summary generator for scanned wallets
+- **Webhooks** — test webhook delivery simulator with localStorage delivery log
+- **Settings** — API key generation, theme toggle, notification preferences, webhook URL
+- **API Playground** — interactive console for `/v1/scan`, `/v1/vaults`, `/v1/alerts`, `/v1/webhooks/receive`
 - **Pricing** — Free, Pro, Enterprise tiers with revenue simulator
 - **Docs** — quick start, SDK overview, endpoint reference
-- **Backend** — FastAPI stub with deterministic mock risk scoring
+- **Backend** — FastAPI stub with deterministic mock risk scoring and webhook receiver
 
 ## Tech stack
 
 - React 19 + TypeScript + Vite
 - react-router-dom, framer-motion, sonner
-- Recharts, Lucide React
+- Recharts, Lucide React, jsPDF
 - FastAPI backend stub
 - Vitest + Testing Library
 
@@ -49,9 +52,12 @@ API docs: http://localhost:8000/docs
 | `/dashboard` | Dashboard |
 | `/watchlist` | Watchlist |
 | `/alerts` | Alerts |
+| `/compliance` | Compliance report |
+| `/webhooks` | Webhook simulator |
 | `/pricing` | Pricing |
 | `/docs` | Documentation |
 | `/api-playground` | API console |
+| `/settings` | Settings |
 
 ## Build & test
 

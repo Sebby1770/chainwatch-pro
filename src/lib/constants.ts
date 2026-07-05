@@ -119,4 +119,18 @@ export const API_ENDPOINTS = [
     description: 'Service health check',
     defaultBody: null,
   },
+  {
+    id: 'webhooks',
+    method: 'POST',
+    path: '/v1/webhooks/receive',
+    description: 'Receive webhook alert payloads (logs to server)',
+    defaultBody: {
+      event: 'risk.alert',
+      severity: 'watch',
+      chain: 'base',
+      address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+      message: 'Slippage exceeded 2.5% on swap route',
+      risk_score: 52,
+    },
+  },
 ] as const

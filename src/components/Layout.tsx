@@ -1,6 +1,8 @@
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import { Bell, LockKeyhole, Menu, ShieldCheck } from 'lucide-react'
+import { OnboardingTour } from './OnboardingTour'
+import { ThemeToggle } from './ThemeToggle'
 import { NavLink, Outlet } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { NetworkBackground } from './NetworkBackground'
@@ -11,9 +13,12 @@ const navItems = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/watchlist', label: 'Watchlist' },
   { to: '/alerts', label: 'Alerts' },
+  { to: '/compliance', label: 'Compliance' },
+  { to: '/webhooks', label: 'Webhooks' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/docs', label: 'Docs' },
   { to: '/api-playground', label: 'API' },
+  { to: '/settings', label: 'Settings' },
 ]
 
 export function Layout() {
@@ -48,6 +53,7 @@ export function Layout() {
         </nav>
 
         <div className="topbar-actions">
+          <ThemeToggle />
           <NavLink to="/alerts" className="icon-button" aria-label="Notifications" title="Notifications">
             <Bell size={18} aria-hidden="true" />
             <span>3</span>
@@ -70,6 +76,7 @@ export function Layout() {
         <Outlet />
       </motion.main>
 
+      <OnboardingTour />
       <Toaster position="bottom-right" richColors closeButton />
     </div>
   )

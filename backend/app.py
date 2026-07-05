@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
-from typing import Literal
+from typing import Any, Literal
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-app = FastAPI(title="ChainWatch Pro API", version="1.0.0")
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("chainwatch")
+
+app = FastAPI(title="ChainWatch Pro API", version="3.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -91,7 +95,7 @@ class ScanResponse(BaseModel):
 def health() -> dict[str, str]:
     return {
         "status": "ok",
-        "version": "1.0.0",
+        "version": "3.0.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -147,4 +151,21 @@ def list_alerts() -> dict[str, list[dict]]:
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             },
         ]
+    }
+
+
+@app.post("/v1/webhooks/receive")
+async def receive_webhook(request: Request) -> dict[str, Any]:
+    payload = await request.json()
+    api_key = request.headers.get("X-API-Key", "none")
+    logger.info(
+        "Webhook received | api_key=%s | payload=%s",
+        api_key[:12] + "..." if len(api_key) > 12 else api_key,
+        payload,
+    )
+    return {
+        "status": "received",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "event": payload.get("event", "unknown"),
+        "logged": True,
     }

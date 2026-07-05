@@ -1,5 +1,6 @@
 import { ArrowUpRight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 export function SectionTitle({
   icon: Icon,
@@ -10,8 +11,10 @@ export function SectionTitle({
   icon: LucideIcon
   eyebrow: string
   title: string
-  action?: string
+  action?: ReactNode
 }) {
+  const actionIsString = typeof action === 'string'
+
   return (
     <div className="section-title">
       <div>
@@ -22,9 +25,13 @@ export function SectionTitle({
         <h2>{title}</h2>
       </div>
       {action ? (
-        <button type="button" className="icon-button small" aria-label={action} title={action}>
-          <ArrowUpRight size={16} aria-hidden="true" />
-        </button>
+        actionIsString ? (
+          <button type="button" className="icon-button small" aria-label={action} title={action}>
+            <ArrowUpRight size={16} aria-hidden="true" />
+          </button>
+        ) : (
+          <div className="section-title-action">{action}</div>
+        )
       ) : null}
     </div>
   )

@@ -5,6 +5,7 @@ import {
   AlertCircle,
   CircleDollarSign,
   Database,
+  Download,
   Gauge,
   Layers,
   LineChart as TrendIcon,
@@ -14,6 +15,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import {
   Area,
   AreaChart,
@@ -29,7 +31,10 @@ import {
   YAxis,
 } from 'recharts'
 import { KpiCard } from '../components/KpiCard'
+import { PortfolioRiskDashboard } from '../components/PortfolioRiskDashboard'
 import { SectionTitle } from '../components/SectionTitle'
+import { TransactionTimeline } from '../components/TransactionTimeline'
+import { generateRiskReportPdf } from '../lib/pdfReport'
 import { useLiveAlerts } from '../hooks/useLiveAlerts'
 import { chains, riskModes } from '../lib/constants'
 import type { ChainId, RiskMode } from '../lib/types'
@@ -107,6 +112,20 @@ export function Dashboard() {
 
   const updateCompareAddress = (index: number, value: string) => {
     setCompareAddresses((current) => current.map((item, i) => (i === index ? value : item)))
+  }
+
+  const exportPdfReport = () => {
+    generateRiskReportPdf({
+      address: walletAddress,
+      chain: chain.name,
+      riskScore,
+      healthScore,
+      portfolioValue,
+      activePositions,
+      walletAge,
+      mode: mode.label,
+    })
+    toast.success('PDF risk report downloaded')
   }
 
   return (
@@ -187,6 +206,8 @@ export function Dashboard() {
         </motion.div>
       </section>
 
+      <PortfolioRiskDashboard />
+
       <section className="kpi-grid" aria-label="Key metrics">
         <KpiCard
           icon={Gauge}
@@ -230,7 +251,17 @@ export function Dashboard() {
 
       <section className="dashboard-grid">
         <article className="panel wide-panel">
-          <SectionTitle icon={TrendIcon} eyebrow="Risk engine" title="7-day risk timeline" action="Open analytics" />
+          <SectionTitle
+            icon={TrendIcon}
+            eyebrow="Risk engine"
+            title="7-day risk timeline"
+            action={
+              <button type="button" className="secondary-button small-btn" onClick={exportPdfReport}>
+                <Download size={15} aria-hidden="true" />
+                Export PDF
+              </button>
+            }
+          />
           <div className="chart-wrap">
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={riskTimeline} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}>
@@ -289,6 +320,8 @@ export function Dashboard() {
             </ResponsiveContainer>
           </div>
         </article>
+
+        <TransactionTimeline address={walletAddress} chain={activeChain} />
 
         <article className="panel live-feed-panel">
           <SectionTitle icon={AlertCircle} eyebrow="Live feed" title="Simulated WebSocket alerts (5s)" action="Review feed" />

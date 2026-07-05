@@ -61,3 +61,64 @@ export interface ScanResult {
   activePositions: number
   walletAge: number
 }
+
+export type ThemeMode = 'light' | 'dark'
+
+export interface AppSettings {
+  apiKey: string
+  theme: ThemeMode
+  notifications: {
+    email: boolean
+    telegram: boolean
+    slack: boolean
+    criticalOnly: boolean
+  }
+  webhookUrl: string
+}
+
+export interface WebhookDeliveryLog {
+  id: string
+  payload: Record<string, unknown>
+  status: 'delivered' | 'failed' | 'pending'
+  responseCode: number | null
+  timestamp: number
+  endpoint: string
+}
+
+export interface MockTransaction {
+  id: string
+  hash: string
+  type: 'swap' | 'transfer' | 'approve' | 'stake' | 'bridge'
+  amount: string
+  counterparty: string
+  chain: ChainId
+  timestamp: number
+  riskFlag: Severity | null
+  riskReason: string | null
+}
+
+export interface PortfolioRiskSummary {
+  portfolioRiskScore: number
+  diversificationScore: number
+  totalValue: number
+  walletCount: number
+  chainExposure: { name: string; value: number; color: string }[]
+  diversificationData: { name: string; value: number }[]
+}
+
+export interface ComplianceSummary {
+  address: string
+  chain: ChainId
+  generatedAt: number
+  overallStatus: 'compliant' | 'review' | 'flagged'
+  riskScore: number
+  checks: {
+    id: string
+    label: string
+    status: 'pass' | 'warn' | 'fail'
+    detail: string
+  }[]
+  sanctionsScreening: string
+  travelRuleStatus: string
+  lastAuditDate: string
+}
