@@ -1,80 +1,84 @@
 # ChainWatch Pro
 
-ChainWatch Pro is a GitHub-ready Web3 SaaS starter app for wallet risk scoring, vault intelligence, paid alerts, and subscription revenue planning.
+ChainWatch Pro is a GitHub-ready Web3 SaaS starter for wallet risk scoring, vault intelligence, paid alerts, and subscription revenue planning.
 
-It is built as a polished frontend product you can show, deploy, and extend. The current version uses deterministic demo data so it works without API keys. To make it production-grade, connect real wallet/indexer APIs, payments, authentication, and alert delivery.
+Version 2 adds full routing, dedicated pages, a FastAPI backend stub, API playground, and production-oriented architecture.
 
 ## What it includes
 
-- Advanced blockchain dashboard UI for wallet health, chain selection, risk modes, exposure, transaction velocity, alert rules, and vault signals
-- Monetization surfaces for paid tiers, subscription planning, and product packaging
-- Revenue simulator for subscribers, pricing, infrastructure cost, MRR, ARR, and profit
-- Generated fintech dashboard media at `public/media/chainwatch-dashboard.png`
-- Responsive React + TypeScript + Vite codebase ready to push to GitHub
+- **Dashboard** — animated network background, live alert feed (simulated WebSocket every 5s), multi-wallet compare, 7-day risk timeline, chain switcher, risk mode toggle
+- **Watchlist** — add/remove wallets with localStorage persistence and quick scan
+- **Alerts** — rule builder (threshold, chain, type) and simulated alert history
+- **API Playground** — interactive console for `/v1/scan`, `/v1/vaults`, `/v1/alerts`
+- **Pricing** — Free, Pro, Enterprise tiers with revenue simulator
+- **Docs** — quick start, SDK overview, endpoint reference
+- **Backend** — FastAPI stub with deterministic mock risk scoring
 
 ## Tech stack
 
-- React 19
-- TypeScript
-- Vite
-- Recharts
-- Lucide React
-- CSS modules-style plain CSS
+- React 19 + TypeScript + Vite
+- react-router-dom, framer-motion, sonner
+- Recharts, Lucide React
+- FastAPI backend stub
+- Vitest + Testing Library
 
 ## Run locally
+
+### Frontend
 
 ```bash
 npm install
 npm run dev
 ```
 
-Then open the local URL Vite prints in your terminal.
+### Backend (optional)
 
-## Build
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app:app --reload --port 8000
+```
+
+API docs: http://localhost:8000/docs
+
+## Routes
+
+| Path | Page |
+|------|------|
+| `/` | Home |
+| `/dashboard` | Dashboard |
+| `/watchlist` | Watchlist |
+| `/alerts` | Alerts |
+| `/pricing` | Pricing |
+| `/docs` | Documentation |
+| `/api-playground` | API console |
+
+## Build & test
 
 ```bash
 npm run build
+npm run test
 ```
 
-## Monetization plan
+## Docker (backend)
 
-This app is designed for a subscription SaaS model:
-
-- Scout: low-cost wallet scans for retail users
-- Operator: active DeFi monitoring and alerts
-- Desk: API access, team seats, and custom rules for DAOs or funds
-
-Potential paid features:
-
-- Stripe Checkout for monthly plans
-- Wallet scan credits
-- Telegram, Discord, Slack, and email alerts
-- Exportable PDF risk reports
-- API keys for desks and analysts
-- Affiliate partnerships with portfolio tools, tax tools, or custody providers
+```bash
+cd backend
+docker build -t chainwatch-api .
+docker run -p 8000:8000 chainwatch-api
+```
 
 ## Production integrations
 
-Replace the demo calculations in `src/App.tsx` with services such as:
+Replace demo calculations with real services:
 
-- Wallet/indexing: Alchemy, Moralis, QuickNode, Covalent, The Graph, Helius
-- Market and DeFi data: DefiLlama, CoinGecko, Dune, Token Terminal
-- Risk and compliance: Chainalysis, TRM Labs, Blockaid, GoPlus Security
-- Payments: Stripe Checkout or Lemon Squeezy
-- Auth and database: Clerk, Supabase, Firebase, or Auth.js
-- Alerts: Resend, Twilio, Telegram Bot API, Discord webhooks, Slack webhooks
-
-## Suggested GitHub flow
-
-```bash
-git init
-git add .
-git commit -m "Initial ChainWatch Pro app"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/chainwatch-pro.git
-git push -u origin main
-```
+- **Wallet/indexing**: Alchemy, Moralis, QuickNode, Covalent, The Graph
+- **Market/DeFi**: DefiLlama, CoinGecko, Dune
+- **Risk**: Chainalysis, TRM Labs, Blockaid, GoPlus Security
+- **Payments**: Stripe Checkout or Lemon Squeezy
+- **Auth/DB**: Clerk, Supabase, Firebase
+- **Alerts**: Resend, Telegram Bot API, Discord/Slack webhooks
 
 ## Important note
 
-This is not financial advice and the demo data should not be used to make trading or investment decisions. Before charging customers, add real data sources, legal disclaimers, privacy policy, terms of service, rate limiting, and payment security.
+This is not financial advice. Demo data should not be used for trading decisions. Before charging customers, add real data sources, legal disclaimers, privacy policy, terms of service, rate limiting, and payment security.
