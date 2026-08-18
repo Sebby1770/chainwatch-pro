@@ -102,6 +102,27 @@ export const API_ENDPOINTS = [
     defaultBody: null,
   },
   {
+    id: 'batch-scan',
+    method: 'POST',
+    path: '/v1/scan/batch',
+    description: 'Scan up to 25 wallet addresses and return average risk',
+    defaultBody: {
+      addresses: [
+        '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+        '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+      ],
+      chain: 'ethereum',
+      mode: 'balanced',
+    },
+  },
+  {
+    id: 'sanctions',
+    method: 'GET',
+    path: '/v1/sanctions/0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+    description: 'Mock sanctions screen for a wallet address',
+    defaultBody: null,
+  },
+  {
     id: 'health',
     method: 'GET',
     path: '/health',

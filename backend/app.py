@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("chainwatch")
 
-app = FastAPI(title="ChainWatch Pro API", version="4.0.0")
+app = FastAPI(title="ChainWatch Pro API", version="5.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -237,7 +237,7 @@ class ContractScanResponse(BaseModel):
 def health() -> dict[str, str]:
     return {
         "status": "ok",
-        "version": "4.0.0",
+        "version": "5.0.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -308,6 +308,50 @@ def scan_contract(payload: ContractScanRequest) -> ContractScanResponse:
         vulnerabilities=vulnerabilities,
         scanned_at=datetime.now(timezone.utc).isoformat(),
     )
+
+
+class BatchScanRequest(BaseModel):
+    addresses: list[str] = Field(..., min_length=1, max_length=25)
+    chain: ChainId = "ethereum"
+    mode: RiskMode = "balanced"
+
+
+SANCTION_LISTS = ["OFAC SDN", "EU Restrictive", "UN 1267"]
+
+
+@app.post("/v1/scan/batch")
+def scan_batch(payload: BatchScanRequest) -> dict[str, Any]:
+    unique = []
+    seen: set[str] = set()
+    for address in payload.addresses:
+        key = address.strip()
+        if not key or key.lower() in seen:
+            continue
+        seen.add(key.lower())
+        unique.append(key)
+
+    results = [
+        scan_wallet(ScanRequest(address=address, chain=payload.chain, mode=payload.mode))
+        for address in unique
+    ]
+    average = round(sum(item.risk_score for item in results) / len(results)) if results else 0
+    return {
+        "count": len(results),
+        "average_risk": average,
+        "results": [item.model_dump() for item in results],
+    }
+
+
+@app.get("/v1/sanctions/{address}")
+def sanctions_screen(address: str) -> dict[str, Any]:
+    seed = hash_text(address.strip().lower())
+    status = "hit" if seed % 17 == 0 else "watch" if seed % 7 == 0 else "clear"
+    return {
+        "address": address,
+        "status": status,
+        "score": 92 if status == "hit" else 58 if status == "watch" else 8,
+        "lists": [] if status == "clear" else [SANCTION_LISTS[seed % len(SANCTION_LISTS)]],
+    }
 
 
 @app.get("/v1/vaults")

@@ -2,12 +2,12 @@
 
 ChainWatch Pro is a GitHub-ready Web3 SaaS starter for wallet risk scoring, vault intelligence, contract scanning, paid alerts, and subscription revenue planning.
 
-Version 4 adds vault intelligence, contract scanner, GraphQL playground, usage analytics, address labels, alert digest preview, and mobile bottom navigation.
+Version 5 adds watchlist CSV import/export, sanctions screening, and batch wallet scans.
 
 ## What it includes
 
 - **Dashboard** — animated network background, live alert feed, multi-wallet compare, 7-day risk timeline, portfolio risk dashboard, usage analytics widget, transaction timeline, PDF export
-- **Watchlist** — add/remove wallets with labels, tags, localStorage persistence, and quick scan
+- **Watchlist** — add/remove wallets with labels, tags, CSV import/export, sanctions flags, localStorage persistence, and quick scan
 - **Vaults** — DeFi vault cards with APY, TVL, risk score; filter by chain and sort
 - **Contract Scanner** — mock audit scores, vulnerability list, and compiler info for any contract address
 - **Alerts** — rule builder (threshold, chain, type), simulated alert history, daily digest email preview
@@ -15,10 +15,10 @@ Version 4 adds vault intelligence, contract scanner, GraphQL playground, usage a
 - **Webhooks** — test webhook delivery simulator with localStorage delivery log
 - **GraphQL Playground** — mock query editor with sample queries for scan, vaults, and contract audit
 - **Settings** — API key generation, theme toggle, notification preferences, webhook URL
-- **API Playground** — interactive console for `/v1/scan`, `/v1/scan/contract`, `/v1/vaults`, `/v1/usage`, `/v1/alerts`, `/v1/webhooks/receive`
+- **API Playground** — interactive console for `/v1/scan`, `/v1/scan/batch`, `/v1/scan/contract`, `/v1/sanctions/{address}`, `/v1/vaults`, `/v1/usage`, `/v1/alerts`, `/v1/webhooks/receive`
 - **Pricing** — Free, Pro, Enterprise tiers with revenue simulator
 - **Docs** — quick start, SDK overview, endpoint reference
-- **Backend** — FastAPI stub with deterministic mock risk scoring, contract scanning, and webhook receiver
+- **Backend** — FastAPI stub with deterministic mock risk scoring, contract scanning, batch scans, sanctions, and webhook receiver
 
 ## Tech stack
 
