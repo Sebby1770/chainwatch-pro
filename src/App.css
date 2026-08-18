@@ -1104,6 +1104,12 @@ main {
   font-size: 11px;
 }
 
+.watchlist-toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .watchlist-form {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;

@@ -5,13 +5,15 @@ import { toast } from 'sonner'
 import { SectionTitle } from '../components/SectionTitle'
 import { useUsageCounters } from '../hooks/useUsageCounters'
 import { API_ENDPOINTS } from '../lib/constants'
+import { batchScanWallets } from '../lib/batchScan'
 import { scanContract } from '../lib/contractScan'
+import { screenAddress } from '../lib/sanctions'
 import { VAULT_CATALOG, vaultToApiPayload } from '../lib/vaults'
 import { hashText, clamp } from '../lib/utils'
 
 function mockResponse(endpointId: string, body: Record<string, unknown> | null) {
   if (endpointId === 'health') {
-    return { status: 'ok', version: '4.0.0', timestamp: new Date().toISOString() }
+    return { status: 'ok', version: '5.0.0', timestamp: new Date().toISOString() }
   }
 
   if (endpointId === 'usage') {
@@ -50,6 +52,34 @@ function mockResponse(endpointId: string, body: Record<string, unknown> | null) 
       vulnerabilities: result.vulnerabilities,
       scanned_at: result.scannedAt,
     }
+  }
+
+  if (endpointId === 'batch-scan') {
+    const addresses = Array.isArray(body?.addresses)
+      ? body.addresses.map((item) => String(item))
+      : [String(body?.address ?? '0x0')]
+    const summary = batchScanWallets({
+      addresses,
+      chain: (body?.chain as 'ethereum' | 'base' | 'arbitrum' | 'polygon' | 'solana') ?? 'ethereum',
+      mode: (body?.mode as 'conservative' | 'balanced' | 'aggressive') ?? 'balanced',
+    })
+    return {
+      count: summary.count,
+      average_risk: summary.averageRisk,
+      results: summary.results.map((item) => ({
+        address: item.address,
+        chain: item.chain,
+        risk_score: item.riskScore,
+        health_score: item.healthScore,
+        portfolio_value: item.portfolioValue,
+        active_positions: item.activePositions,
+        wallet_age_days: item.walletAge,
+      })),
+    }
+  }
+
+  if (endpointId === 'sanctions') {
+    return screenAddress('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266')
   }
 
   if (endpointId === 'alerts') {

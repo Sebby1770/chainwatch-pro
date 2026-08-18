@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.0.0] - 2026-08-19
+
+### Added
+
+- Watchlist CSV import/export (`address,label,tags`)
+- Deterministic sanctions screen on each watchlist card
+- Batch wallet scan helper plus `POST /v1/scan/batch` and `GET /v1/sanctions/{address}` on the FastAPI stub
+- API playground samples for batch scan and sanctions
+
+### Changed
+
+- Bumped API and package version to 5.0.0
+
 ## [4.0.0] - 2026-07-05
 
 ### Added
