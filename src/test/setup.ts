@@ -14,8 +14,7 @@ class ResizeObserverMock {
 
 globalThis.ResizeObserver = ResizeObserverMock as typeof ResizeObserver
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-HTMLCanvasElement.prototype.getContext = ((_contextId: string) => ({
+HTMLCanvasElement.prototype.getContext = (() => ({
   clearRect: () => undefined,
   beginPath: () => undefined,
   arc: () => undefined,
@@ -23,4 +22,4 @@ HTMLCanvasElement.prototype.getContext = ((_contextId: string) => ({
   moveTo: () => undefined,
   lineTo: () => undefined,
   stroke: () => undefined,
-})) as any
+})) as unknown as typeof HTMLCanvasElement.prototype.getContext
