@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 export function useLocalStorage<T>(key: string, initialValue: T) {
   const readValue = useCallback((): T => {
@@ -12,9 +12,13 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
 
   const [storedValue, setStoredValue] = useState<T>(readValue)
 
-  useEffect(() => {
+  // Reset when the storage key changes (render-time derived-state pattern —
+  // avoids the cascading-render hazard of a synchronous setState in an effect).
+  const [lastKey, setLastKey] = useState(key)
+  if (lastKey !== key) {
+    setLastKey(key)
     setStoredValue(readValue())
-  }, [readValue])
+  }
 
   const setValue = useCallback(
     (value: T | ((current: T) => T)) => {

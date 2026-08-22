@@ -2,10 +2,12 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { Alerts } from './pages/Alerts'
 import { ApiPlayground } from './pages/ApiPlayground'
+import { Cases } from './pages/Cases'
 import { Compliance } from './pages/Compliance'
 import { ContractScanner } from './pages/ContractScanner'
 import { Dashboard } from './pages/Dashboard'
 import { Docs } from './pages/Docs'
+import { Explorer } from './pages/Explorer'
 import { GraphQLPlayground } from './pages/GraphQLPlayground'
 import { Home } from './pages/Home'
 import { Pricing } from './pages/Pricing'
@@ -27,6 +29,8 @@ function App() {
           <Route path="docs" element={<Docs />} />
           <Route path="vaults" element={<Vaults />} />
           <Route path="scanner" element={<ContractScanner />} />
+          <Route path="explorer" element={<Explorer />} />
+          <Route path="cases" element={<Cases />} />
           <Route path="graphql" element={<GraphQLPlayground />} />
           <Route path="api-playground" element={<ApiPlayground />} />
           <Route path="settings" element={<Settings />} />

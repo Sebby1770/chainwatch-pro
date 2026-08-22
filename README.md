@@ -2,12 +2,14 @@
 
 ChainWatch Pro is a GitHub-ready Web3 SaaS starter for wallet risk scoring, vault intelligence, contract scanning, paid alerts, and subscription revenue planning.
 
-Version 5 adds watchlist CSV import/export, sanctions screening, and batch wallet scans.
+Version 6 adds an interactive address flow explorer and investigation case management.
 
 ## What it includes
 
 - **Dashboard** — animated network background, live alert feed, multi-wallet compare, 7-day risk timeline, portfolio risk dashboard, usage analytics widget, transaction timeline, PDF export
 - **Watchlist** — add/remove wallets with labels, tags, CSV import/export, sanctions flags, localStorage persistence, and quick scan
+- **Explorer** — interactive transaction-flow graph around any address: deterministic force-directed layout, pan/zoom, click-to-inspect, double-click to expand counterparties, root-path tracing, sanctions flags on nodes, and one-click attach to an investigation case
+- **Cases** — investigation case management: group addresses into cases with status/priority, keep a note trail, see a per-case risk rollup (highest risk, sanctions hits), and export a Markdown hand-off report
 - **Vaults** — DeFi vault cards with APY, TVL, risk score; filter by chain and sort
 - **Contract Scanner** — mock audit scores, vulnerability list, and compiler info for any contract address
 - **Alerts** — rule builder (threshold, chain, type), simulated alert history, daily digest email preview

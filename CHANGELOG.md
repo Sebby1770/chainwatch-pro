@@ -1,5 +1,26 @@
 # Changelog
 
+## [6.0.0] - 2026-08-22
+
+### Added
+
+- **Address flow explorer** (`/explorer`) — deterministic transaction-flow graph around
+  any address: seeded force-directed layout (pure, unit-tested `flowGraph.ts`), pan and
+  zoom, node inspection with sanctions screening and in/out flow, double-click peer
+  expansion, BFS route tracing back to the root, and per-node "add to case"
+- **Investigation cases** (`/cases`) — open cases with priority and status, attach
+  addresses from the explorer, evidence notes, deterministic risk rollups (highest risk,
+  sanctions hits), Markdown report export, and localStorage persistence (`cases.ts`,
+  fully unit-tested)
+- 20 new unit tests covering graph determinism, node caps, expansion idempotence,
+  shortest paths, layout bounds/determinism, and the whole case lifecycle
+
+### Fixed
+
+- Pre-existing lint errors: cascading-render hazard in `useLocalStorage` (key changes
+  now reset via the render-time derived-state pattern) and `any`/unused-var issues in
+  the test canvas mock
+
 ## [5.0.0] - 2026-08-19
 
 ### Added

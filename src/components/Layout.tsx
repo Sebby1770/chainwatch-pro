@@ -15,6 +15,8 @@ const navItems = [
   { to: '/watchlist', label: 'Watchlist' },
   { to: '/vaults', label: 'Vaults' },
   { to: '/scanner', label: 'Scanner' },
+  { to: '/explorer', label: 'Explorer' },
+  { to: '/cases', label: 'Cases' },
   { to: '/alerts', label: 'Alerts' },
   { to: '/compliance', label: 'Compliance' },
   { to: '/webhooks', label: 'Webhooks' },
