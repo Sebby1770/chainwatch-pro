@@ -1,6 +1,6 @@
 import { chains } from './constants'
 import type { PortfolioRiskSummary, WatchlistEntry } from './types'
-import { clamp, computeRiskScore } from './utils'
+import { clamp, computeRiskScore, hashText } from './utils'
 
 const CHAIN_COLORS: Record<string, string> = {
   Ethereum: '#627eea',
@@ -22,8 +22,12 @@ export function computePortfolioRisk(watchlist: WatchlistEntry[]): PortfolioRisk
     }
   }
 
-  const walletMetrics = watchlist.map((entry, index) => {
-    const chain = chains[index % chains.length]
+  const walletMetrics = watchlist.map((entry) => {
+    // Chain assignment is derived from the address so that a wallet keeps the
+    // same chain, value and risk no matter where it sits in the watchlist.
+    // Indexing by array position made the whole portfolio summary change when
+    // an entry was added, removed or re-sorted.
+    const chain = chains[hashText(entry.address.trim().toLowerCase()) % chains.length]
     const metrics = computeRiskScore(entry.address, chain.baseRisk, 0)
     return {
       entry,

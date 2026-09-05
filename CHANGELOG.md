@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.0.1] - 2026-09-05
+
+### Fixed
+
+- **Contract scanner reported duplicate findings.** Templates were indexed with a fixed stride (`seed + index * 3` over six templates), which aliased back onto itself after two steps, so every 3- and 4-finding scan listed the same vulnerability twice under different ids. Findings are now drawn without replacement via a seeded shuffle and sorted by descending severity.
+- **Portfolio risk depended on watchlist ordering.** Each wallet took its chain from its array index, so adding, removing or re-sorting an entry changed every other wallet's chain, value and risk score. Chain is now derived from the address, making the summary order-independent.
+- **Watchlist CSV import corrupted multi-line labels.** The parser split on newlines before honouring quotes, so a label containing a line break — which the exporter itself emits — was torn apart and its tail imported as an extra wallet address. Records are now tokenised character by character, and CRLF input is handled.
+- **`useLocalStorage` could re-render without settling.** The stored reader depended on `initialValue`, so a caller passing an inline literal produced a new reader every render and drove a setState-in-effect cascade. The fallback is captured once and key changes are handled during render.
+- Cleared the type errors in the canvas test shim that made `npm run lint` fail.
+
+### Added
+
+- Regression tests for contract scan findings, portfolio ordering, CSV round-trips and `useLocalStorage` (25 tests, up from 4).
+- `npm run lint` now runs in CI.
+
 ## [5.0.0] - 2026-08-19
 
 ### Added

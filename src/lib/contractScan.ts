@@ -68,6 +68,40 @@ const VULN_TEMPLATES: Omit<ContractVulnerability, 'id'>[] = [
 const COMPILER_VERSIONS = ['v0.8.19+commit.7dd6d404', 'v0.8.20+commit.a1b79de6', 'v0.8.24+commit.e11b9ed9']
 const CONTRACT_NAMES = ['VaultStrategy', 'TimelockController', 'RewardDistributor', 'LiquidityRouter', 'AccessManager']
 
+const SEVERITY_RANK: Record<ContractVulnerability['severity'], number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+}
+
+/**
+ * Deterministically draws `count` *distinct* findings for a seed.
+ *
+ * The previous implementation indexed the template list with a fixed stride
+ * (`seed + index * 3` over six templates), which aliases back onto itself after
+ * two steps — any scan reporting three or four findings listed the same
+ * vulnerability twice under different ids. A seeded Fisher-Yates shuffle draws
+ * without replacement instead, so a finding can never be double-counted.
+ */
+function selectVulnerabilities(seed: number, count: number): ContractVulnerability[] {
+  const order = VULN_TEMPLATES.map((_, index) => index)
+  let cursor = seed + 1
+  for (let i = order.length - 1; i > 0; i -= 1) {
+    cursor = (cursor * 1103515245 + 12345) % 2147483648
+    const j = cursor % (i + 1)
+    const swap = order[i]
+    order[i] = order[j]
+    order[j] = swap
+  }
+
+  return order
+    .slice(0, Math.min(count, VULN_TEMPLATES.length))
+    .map((index) => VULN_TEMPLATES[index])
+    .sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity])
+    .map((template, index) => ({ ...template, id: `vuln-${index + 1}` }))
+}
+
 export function scanContract(address: string, chain: ChainId): ContractScanResult {
   const seed = hashText(`${address}-${chain}`)
   const auditScore = clamp(38 + (seed % 58) - (address.length % 7), 22, 96)
@@ -75,13 +109,7 @@ export function scanContract(address: string, chain: ChainId): ContractScanResul
     auditScore >= 85 ? 'A' : auditScore >= 70 ? 'B' : auditScore >= 55 ? 'C' : auditScore >= 40 ? 'D' : 'F'
 
   const vulnCount = auditScore >= 80 ? 1 : auditScore >= 60 ? 2 : auditScore >= 45 ? 3 : 4
-  const vulnerabilities = Array.from({ length: vulnCount }, (_, index) => {
-    const template = VULN_TEMPLATES[(seed + index * 3) % VULN_TEMPLATES.length]
-    return {
-      ...template,
-      id: `vuln-${index + 1}`,
-    }
-  })
+  const vulnerabilities = selectVulnerabilities(seed, vulnCount)
 
   return {
     address,
