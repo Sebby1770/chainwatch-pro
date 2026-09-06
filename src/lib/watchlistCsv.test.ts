@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseWatchlistCsv, serializeWatchlistCsv } from './watchlistCsv'
+import { importWatchlistCsv, parseWatchlistCsv, serializeWatchlistCsv } from './watchlistCsv'
 import type { WatchlistEntry } from './types'
 
 const sample: WatchlistEntry[] = [
@@ -64,5 +64,75 @@ describe('watchlist csv', () => {
     const parsed = parseWatchlistCsv('0xabc,One,defi\n0xABC,Two,ops', 50)
     expect(parsed).toHaveLength(1)
     expect(parsed[0].label).toBe('One')
+  })
+})
+
+describe('importWatchlistCsv', () => {
+  const VALID = '0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed'
+  const OTHER = '0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359'
+
+  it('reports each rejected row with a reason and a row number', () => {
+    const csv = [
+      'address,label,tags',
+      `${VALID},Good,ops`,
+      'hello world,Junk,',
+      '0x1234,Short,',
+      `${OTHER},Also good,`,
+    ].join('\n')
+
+    const report = importWatchlistCsv(csv, { now: 1000 })
+
+    expect(report.entries.map((entry) => entry.address)).toEqual([VALID, OTHER])
+    expect(report.rejected).toHaveLength(2)
+    expect(report.rejected[0].row).toBe(3)
+    expect(report.rejected[0].value).toBe('hello world')
+    expect(report.rejected[0].reason).toMatch(/recognised/i)
+    expect(report.rejected[1].row).toBe(4)
+    expect(report.rejected[1].reason).toMatch(/40 hex/i)
+  })
+
+  it('stores the checksummed form of a lowercase address', () => {
+    const report = importWatchlistCsv(`address,label,tags\n${VALID.toLowerCase()},Lower,`, {
+      now: 1,
+    })
+    expect(report.entries[0].address).toBe(VALID)
+  })
+
+  it('rejects an address whose EIP-55 checksum does not match', () => {
+    const broken = `0x5aaeb6053F3E94C9b9A09f33669435E7Ef1BeAed`
+    const report = importWatchlistCsv(`address,label,tags\n${broken},Typo,`, { now: 1 })
+    expect(report.entries).toHaveLength(0)
+    expect(report.rejected[0].reason).toMatch(/checksum/i)
+  })
+
+  it('counts rows already on the watchlist as duplicates, not rejections', () => {
+    const report = importWatchlistCsv(`address,label,tags\n${VALID},Dupe,`, {
+      now: 1,
+      existing: [VALID.toLowerCase()],
+    })
+    expect(report.entries).toHaveLength(0)
+    expect(report.duplicates).toBe(1)
+    expect(report.rejected).toHaveLength(0)
+  })
+
+  it('deduplicates within the file regardless of checksum casing', () => {
+    const csv = `address,label,tags\n${VALID},One,\n${VALID.toLowerCase()},Two,`
+    const report = importWatchlistCsv(csv, { now: 1 })
+    expect(report.entries).toHaveLength(1)
+    expect(report.duplicates).toBe(1)
+  })
+
+  it('numbers rows correctly when the file has no header', () => {
+    const report = importWatchlistCsv(`hello,Junk,\n${VALID},Good,`, { now: 1 })
+    expect(report.rejected[0].row).toBe(1)
+    expect(report.entries).toHaveLength(1)
+  })
+
+  it('handles an empty file', () => {
+    expect(importWatchlistCsv('', { now: 1 })).toEqual({
+      entries: [],
+      rejected: [],
+      duplicates: 0,
+    })
   })
 })

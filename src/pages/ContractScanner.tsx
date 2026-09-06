@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { SectionTitle } from '../components/SectionTitle'
 import { useUsageCounters } from '../hooks/useUsageCounters'
 import { chains } from '../lib/constants'
+import { validateAddress } from '../lib/address'
 import { scanContract } from '../lib/contractScan'
 import type { ChainId } from '../lib/types'
 
@@ -23,10 +24,12 @@ export function ContractScanner() {
   }, [address, chain, scanNonce])
 
   const runScan = () => {
-    if (!address.trim()) {
-      toast.error('Enter a contract address')
+    const check = validateAddress(address, chain)
+    if (!check.valid) {
+      toast.error(check.message ?? 'Invalid contract address')
       return
     }
+    setAddress(check.normalized)
     setScanNonce((value) => value + 1)
     increment('contractScans')
     increment('scans')

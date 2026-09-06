@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.1.0] - 2026-09-06
+
+### Added
+
+- **Address validation.** The watchlist, dashboard and contract scanner accepted any non-empty string as a wallet address, so `hello world` could be added, screened, risk-scored and filed into a compliance report. `src/lib/address.ts` validates EVM addresses (length, hex, and **EIP-55 mixed-case checksum**, verified against the reference vectors in the spec), Solana addresses (base58 decoding to 32 bytes), and ENS names for the dashboard's "Wallet or ENS" field. Addresses are stored in canonical checksummed form.
+- **CSV import now reports what it refused.** Bad rows were silently dropped, so importing a file with a mistyped address looked identical to a clean import. `importWatchlistCsv` returns each rejection with its row number and reason, plus a duplicate count, and the UI surfaces them.
+- A failed EIP-55 checksum offers the corrected address in the error toast instead of only refusing.
+
 ## [5.0.1] - 2026-09-05
 
 ### Fixed

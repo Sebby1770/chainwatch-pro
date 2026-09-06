@@ -37,6 +37,7 @@ import { SectionTitle } from '../components/SectionTitle'
 import { TransactionTimeline } from '../components/TransactionTimeline'
 import { UsageAnalytics } from '../components/UsageAnalytics'
 import { useUsageCounters } from '../hooks/useUsageCounters'
+import { validateWalletInput } from '../lib/address'
 import { generateRiskReportPdf } from '../lib/pdfReport'
 import { useLiveAlerts } from '../hooks/useLiveAlerts'
 import { chains, riskModes } from '../lib/constants'
@@ -154,6 +155,14 @@ export function Dashboard() {
               <button
                 type="button"
                 onClick={() => {
+                  const check = validateWalletInput(walletAddress)
+                  if (!check.valid) {
+                    toast.error(check.message ?? 'Invalid wallet address')
+                    return
+                  }
+                  // Store the canonical form so the scan, the compare slots and
+                  // any exported report all agree on one spelling of the address.
+                  setWalletAddress(check.normalized)
                   setScanNonce((value) => value + 1)
                   increment('scans')
                 }}

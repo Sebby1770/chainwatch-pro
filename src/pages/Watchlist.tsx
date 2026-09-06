@@ -8,8 +8,9 @@ import { SectionTitle } from '../components/SectionTitle'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { chains } from '../lib/constants'
 import { screenAddress } from '../lib/sanctions'
+import { validateAddress } from '../lib/address'
 import { DEFAULT_WATCHLIST, normalizeWatchlistEntry } from '../lib/watchlist'
-import { parseWatchlistCsv, serializeWatchlistCsv } from '../lib/watchlistCsv'
+import { importWatchlistCsv, serializeWatchlistCsv } from '../lib/watchlistCsv'
 import type { WatchlistEntry } from '../lib/types'
 import { computeRiskScore, scoreLabel } from '../lib/utils'
 
@@ -34,19 +35,32 @@ export function Watchlist() {
   const normalizedWatchlist = watchlist.map(normalizeWatchlistEntry)
 
   const addWallet = () => {
-    const trimmed = newAddress.trim()
-    if (!trimmed) {
-      toast.error('Enter a wallet address')
+    const check = validateAddress(newAddress)
+    if (!check.valid) {
+      // A failed EIP-55 checksum still yields the corrected address, so offer it
+      // rather than just refusing.
+      if (check.problem === 'evm-bad-checksum') {
+        toast.error(check.message ?? 'Invalid address', {
+          action: {
+            label: 'Use corrected',
+            onClick: () => setNewAddress(check.normalized),
+          },
+        })
+      } else {
+        toast.error(check.message ?? 'Invalid address')
+      }
       return
     }
-    if (normalizedWatchlist.some((entry) => entry.address.toLowerCase() === trimmed.toLowerCase())) {
+
+    const address = check.normalized
+    if (normalizedWatchlist.some((entry) => entry.address.toLowerCase() === address.toLowerCase())) {
       toast.error('Address already on watchlist')
       return
     }
 
     const entry: WatchlistEntry = {
       id: crypto.randomUUID(),
-      address: trimmed,
+      address,
       label: newLabel.trim() || `Wallet ${normalizedWatchlist.length + 1}`,
       tags: parseTags(newTags),
       addedAt: Date.now(),
@@ -88,16 +102,37 @@ export function Watchlist() {
   const importCsv = (file: File) => {
     const reader = new FileReader()
     reader.onload = () => {
-      const parsed = parseWatchlistCsv(String(reader.result ?? ''))
-      if (!parsed.length) {
-        toast.error('No wallet rows found in that CSV')
-        return
-      }
       setWatchlist((current) => {
-        const existing = new Set(current.map((entry) => entry.address.toLowerCase()))
-        const next = parsed.filter((entry) => !existing.has(entry.address.toLowerCase()))
-        toast.success(`Imported ${next.length} wallet${next.length === 1 ? '' : 's'}`)
-        return [...next, ...current.map(normalizeWatchlistEntry)]
+        const report = importWatchlistCsv(String(reader.result ?? ''), {
+          existing: current.map((entry) => entry.address),
+        })
+
+        if (report.entries.length) {
+          toast.success(
+            `Imported ${report.entries.length} wallet${report.entries.length === 1 ? '' : 's'}`,
+          )
+        }
+        if (report.duplicates) {
+          toast.info(`Skipped ${report.duplicates} already on the watchlist`)
+        }
+        if (report.rejected.length) {
+          // Say which rows were dropped and why — a silent skip looked
+          // identical to a clean import.
+          const preview = report.rejected
+            .slice(0, 3)
+            .map((row) => `Row ${row.row}: ${row.reason}`)
+            .join('\n')
+          const more = report.rejected.length > 3 ? `\n…and ${report.rejected.length - 3} more` : ''
+          toast.error(
+            `Rejected ${report.rejected.length} row${report.rejected.length === 1 ? '' : 's'}`,
+            { description: preview + more, duration: 8000 },
+          )
+        }
+        if (!report.entries.length && !report.duplicates && !report.rejected.length) {
+          toast.error('No wallet rows found in that CSV')
+        }
+
+        return [...report.entries, ...current.map(normalizeWatchlistEntry)]
       })
     }
     reader.readAsText(file)
