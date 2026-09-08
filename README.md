@@ -2,12 +2,13 @@
 
 ChainWatch Pro is a GitHub-ready Web3 SaaS starter for wallet risk scoring, vault intelligence, contract scanning, paid alerts, and subscription revenue planning.
 
-Version 5 adds watchlist CSV import/export, sanctions screening, and batch wallet scans.
+Version 5.1 adds real address validation (EIP-55 checksums, Solana base58, ENS) and CSV import diagnostics on top of v5's watchlist CSV, sanctions screening, and batch wallet scans.
 
 ## What it includes
 
 - **Dashboard** — animated network background, live alert feed, multi-wallet compare, 7-day risk timeline, portfolio risk dashboard, usage analytics widget, transaction timeline, PDF export
 - **Watchlist** — add/remove wallets with labels, tags, CSV import/export, sanctions flags, localStorage persistence, and quick scan
+- **Address validation** — EVM addresses checked for length, hex and **EIP-55 checksum** (a mistyped address is rejected with the corrected form offered), Solana base58 decoded to 32 bytes, ENS names accepted where the UI documents them; CSV import reports every rejected row with its reason
 - **Vaults** — DeFi vault cards with APY, TVL, risk score; filter by chain and sort
 - **Contract Scanner** — mock audit scores, vulnerability list, and compiler info for any contract address
 - **Alerts** — rule builder (threshold, chain, type), simulated alert history, daily digest email preview

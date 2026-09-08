@@ -1,5 +1,34 @@
 # Changelog
 
+## [5.1.1] - 2026-09-08
+
+### Fixed
+
+- **Corrupt watchlist storage crashed the Watchlist and Dashboard pages.** A stored entry whose `address` was a number, `null`, an object, or absent threw in `findWatchlistEntry`, `computePortfolioRisk` and `screenAddress` ("address.trim is not a function"), which in React means a white screen with no way back except clearing site data by hand. localStorage is origin-scoped, so any project on the same GitHub Pages account can produce this. `sanitizeWatchlist` now coerces entries at the read boundary and drops those with no usable address, and the three consumers tolerate a non-string address.
+
+## [5.1.0] - 2026-09-06
+
+### Added
+
+- **Address validation.** The watchlist, dashboard and contract scanner accepted any non-empty string as a wallet address, so `hello world` could be added, screened, risk-scored and filed into a compliance report. `src/lib/address.ts` validates EVM addresses (length, hex, and **EIP-55 mixed-case checksum**, verified against the reference vectors in the spec), Solana addresses (base58 decoding to 32 bytes), and ENS names for the dashboard's "Wallet or ENS" field. Addresses are stored in canonical checksummed form.
+- **CSV import now reports what it refused.** Bad rows were silently dropped, so importing a file with a mistyped address looked identical to a clean import. `importWatchlistCsv` returns each rejection with its row number and reason, plus a duplicate count, and the UI surfaces them.
+- A failed EIP-55 checksum offers the corrected address in the error toast instead of only refusing.
+
+## [5.0.1] - 2026-09-05
+
+### Fixed
+
+- **Contract scanner reported duplicate findings.** Templates were indexed with a fixed stride (`seed + index * 3` over six templates), which aliased back onto itself after two steps, so every 3- and 4-finding scan listed the same vulnerability twice under different ids. Findings are now drawn without replacement via a seeded shuffle and sorted by descending severity.
+- **Portfolio risk depended on watchlist ordering.** Each wallet took its chain from its array index, so adding, removing or re-sorting an entry changed every other wallet's chain, value and risk score. Chain is now derived from the address, making the summary order-independent.
+- **Watchlist CSV import corrupted multi-line labels.** The parser split on newlines before honouring quotes, so a label containing a line break — which the exporter itself emits — was torn apart and its tail imported as an extra wallet address. Records are now tokenised character by character, and CRLF input is handled.
+- **`useLocalStorage` could re-render without settling.** The stored reader depended on `initialValue`, so a caller passing an inline literal produced a new reader every render and drove a setState-in-effect cascade. The fallback is captured once and key changes are handled during render.
+- Cleared the type errors in the canvas test shim that made `npm run lint` fail.
+
+### Added
+
+- Regression tests for contract scan findings, portfolio ordering, CSV round-trips and `useLocalStorage` (25 tests, up from 4).
+- `npm run lint` now runs in CI.
+
 ## [5.0.0] - 2026-08-19
 
 ### Added

@@ -5,13 +5,13 @@ import { Cell, Pie, PieChart as RechartsPie, ResponsiveContainer, Tooltip, Bar, 
 import { AddressBadge } from './AddressBadge'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { computePortfolioRisk } from '../lib/portfolio'
-import { DEFAULT_WATCHLIST, normalizeWatchlistEntry } from '../lib/watchlist'
+import { DEFAULT_WATCHLIST, sanitizeWatchlist } from '../lib/watchlist'
 import { formatCurrency, scoreLabel } from '../lib/utils'
 import { SectionTitle } from './SectionTitle'
 
 export function PortfolioRiskDashboard() {
   const [rawWatchlist] = useLocalStorage('chainwatch-watchlist', DEFAULT_WATCHLIST)
-  const watchlist = useMemo(() => rawWatchlist.map(normalizeWatchlistEntry), [rawWatchlist])
+  const watchlist = useMemo(() => sanitizeWatchlist(rawWatchlist), [rawWatchlist])
 
   const portfolio = useMemo(() => computePortfolioRisk(watchlist), [watchlist])
 
