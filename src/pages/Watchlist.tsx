@@ -9,7 +9,7 @@ import { useLocalStorage } from '../hooks/useLocalStorage'
 import { chains } from '../lib/constants'
 import { screenAddress } from '../lib/sanctions'
 import { validateAddress } from '../lib/address'
-import { DEFAULT_WATCHLIST, normalizeWatchlistEntry } from '../lib/watchlist'
+import { DEFAULT_WATCHLIST, normalizeWatchlistEntry, sanitizeWatchlist } from '../lib/watchlist'
 import { importWatchlistCsv, serializeWatchlistCsv } from '../lib/watchlistCsv'
 import type { WatchlistEntry } from '../lib/types'
 import { computeRiskScore, scoreLabel } from '../lib/utils'
@@ -32,7 +32,7 @@ export function Watchlist() {
   const [editTags, setEditTags] = useState('')
   const importInput = useRef<HTMLInputElement>(null)
 
-  const normalizedWatchlist = watchlist.map(normalizeWatchlistEntry)
+  const normalizedWatchlist = sanitizeWatchlist(watchlist)
 
   const addWallet = () => {
     const check = validateAddress(newAddress)
@@ -66,7 +66,7 @@ export function Watchlist() {
       addedAt: Date.now(),
     }
 
-    setWatchlist((current) => [entry, ...current.map(normalizeWatchlistEntry)])
+    setWatchlist((current) => [entry, ...sanitizeWatchlist(current)])
     setNewAddress('')
     setNewLabel('')
     setNewTags('')
@@ -132,7 +132,7 @@ export function Watchlist() {
           toast.error('No wallet rows found in that CSV')
         }
 
-        return [...report.entries, ...current.map(normalizeWatchlistEntry)]
+        return [...report.entries, ...sanitizeWatchlist(current)]
       })
     }
     reader.readAsText(file)

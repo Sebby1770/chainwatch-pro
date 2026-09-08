@@ -12,7 +12,7 @@ export interface SanctionScreen {
 }
 
 export function screenAddress(address: string): SanctionScreen {
-  const seed = hashText(address.trim().toLowerCase())
+  const seed = hashText(String(address ?? '').trim().toLowerCase())
   const status: SanctionStatus = seed % 17 === 0 ? 'hit' : seed % 7 === 0 ? 'watch' : 'clear'
   return {
     address,

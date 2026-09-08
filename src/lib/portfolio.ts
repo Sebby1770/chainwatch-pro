@@ -27,7 +27,7 @@ export function computePortfolioRisk(watchlist: WatchlistEntry[]): PortfolioRisk
     // same chain, value and risk no matter where it sits in the watchlist.
     // Indexing by array position made the whole portfolio summary change when
     // an entry was added, removed or re-sorted.
-    const chain = chains[hashText(entry.address.trim().toLowerCase()) % chains.length]
+    const chain = chains[hashText(String(entry.address ?? '').trim().toLowerCase()) % chains.length]
     const metrics = computeRiskScore(entry.address, chain.baseRisk, 0)
     return {
       entry,

@@ -1,5 +1,11 @@
 # Changelog
 
+## [5.1.1] - 2026-09-08
+
+### Fixed
+
+- **Corrupt watchlist storage crashed the Watchlist and Dashboard pages.** A stored entry whose `address` was a number, `null`, an object, or absent threw in `findWatchlistEntry`, `computePortfolioRisk` and `screenAddress` ("address.trim is not a function"), which in React means a white screen with no way back except clearing site data by hand. localStorage is origin-scoped, so any project on the same GitHub Pages account can produce this. `sanitizeWatchlist` now coerces entries at the read boundary and drops those with no usable address, and the three consumers tolerate a non-string address.
+
 ## [5.1.0] - 2026-09-06
 
 ### Added
